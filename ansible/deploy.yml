@@ -1,0 +1,102 @@
+---
+- name: Deploy Fitness Booking Application
+  hosts: webservers
+  become: yes
+  vars:
+    docker_hub_username: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
+    app_dir: /home/{{ ansible_user }}/fitness-booking
+    env_file: "{{ app_dir }}/.env"
+    nginx_port: 8080  # Change this to your assigned port
+    mailhog_port: 8025  # Change this to your assigned port
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: 
+          - docker.io
+          - docker-compose
+          - python3-pip
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Create .env file
+      template:
+        src: templates/env.j2
+        dest: "{{ env_file }}"
+        mode: '0644'
+
+    - name: Pull Docker images
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        pull: yes
+      register: output
+      become: yes
+
+    - name: Start Docker containers
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        state: present
+      register: output
+      become: yes
+
+    - name: Run Django migrations
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        services: web
+        command: python manage.py migrate
+      become: yes
+
+    - name: Collect static files
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        services: web
+        command: python manage.py collectstatic --no-input
+      become: yes
+
+    - name: Create superuser (if doesn't exist)
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        services: web
+        command: >
+          python -c "
+          import os
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fitness_booking.settings')
+          import django
+          django.setup()
+          from django.contrib.auth.models import User
+          if not User.objects.filter(username='{{ admin_username }}').exists():
+              User.objects.create_superuser('{{ admin_username }}', '{{ admin_email }}', '{{ admin_password }}')
+              print('Superuser created successfully')
+          else:
+              print('Superuser already exists')
+          "
+      environment:
+        admin_username: admin
+        admin_email: admin@example.com
+        admin_password: adminpassword
+      become: yes
+      no_log: true
+
+    - name: Display application URL
+      debug:
+        msg: "Application deployed successfully! Access it at http://{{ ansible_host }}:{{ nginx_port }}"

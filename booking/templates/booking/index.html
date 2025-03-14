@@ -1,0 +1,49 @@
+{% extends "booking/base.html" %}
+{% block content %}
+<div class="jumbotron text-center bg-light p-5 rounded mb-4">
+    <h1 class="display-4">Fitness Class Booking System</h1>
+    <p class="lead">Book your favorite fitness classes quickly and easily.</p>
+    {% if user.is_authenticated %}
+        <a href="{% url 'classes' %}" class="btn btn-primary btn-lg">View Available Classes</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login to Book Classes</a>
+        <a href="{% url 'register' %}" class="btn btn-secondary btn-lg">Register</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>Upcoming Classes</h2>
+        <div class="list-group">
+            {% for class in classes|slice:":5" %}
+                <div class="list-group-item">
+                    <h5 class="mb-1">{{ class.name }}</h5>
+                    <p class="mb-1">{{ class.description }}</p>
+                    <small>
+                        <strong>Date:</strong> {{ class.date }}<br>
+                        <strong>Time:</strong> {{ class.start_time }} - {{ class.end_time }}<br>
+                        <strong>Instructor:</strong> {{ class.instructor }}
+                    </small>
+                </div>
+            {% empty %}
+                <div class="list-group-item">No upcoming classes available.</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Why Choose Us?</h5>
+                <ul class="list-unstyled">
+                    <li>✓ Wide variety of fitness classes</li>
+                    <li>✓ Professional instructors</li>
+                    <li>✓ Easy online booking</li>
+                    <li>✓ Email confirmations</li>
+                    <li>✓ Flexible scheduling</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

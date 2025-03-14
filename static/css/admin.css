@@ -1,0 +1,158 @@
+/* Admin styling overrides */
+:root {
+  --primary: #2E5E3F;  /* Dark Green */
+  --secondary: #F8B712; /* Yellow */
+  --link-fg: #2E5E3F;
+  --link-hover-color: #25482F;
+  --header-color: #F8B712;
+  --accent: #F8B712;
+  --selected-row: #f3eacc;
+  --button-hover-bg: #25482F;
+}
+
+/* Header */
+#header {
+  background: var(--primary);
+  color: white;
+}
+
+#header a:link, #header a:visited {
+  color: white;
+}
+
+#branding h1 {
+  color: var(--secondary);
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+  color: var(--secondary);
+}
+
+/* User tools and breadcrumbs */
+.module h2, .module caption, .inline-group h2 {
+  background: var(--primary);
+}
+
+div.breadcrumbs {
+  background: var(--secondary);
+  color: #333;
+}
+
+div.breadcrumbs a {
+  color: #333;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+  background: var(--primary);
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover,
+.submit-row input:hover {
+  background: var(--button-hover-bg);
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+  background: var(--secondary);
+  color: #333;
+}
+
+.button.default:hover, input[type=submit].default:hover, .submit-row input.default:hover {
+  background: #e2a910;
+  color: #333;
+}
+
+/* Selected rows and table headers */
+.object-tools a:link, .object-tools a:visited {
+  background: var(--secondary);
+  color: #333;
+}
+
+.object-tools a:hover {
+  background: #e2a910;
+}
+
+.row1 {
+  background: #ffffff;
+}
+
+.row2 {
+  background: #f9f9f9;
+}
+
+tr.selected {
+  background-color: var(--selected-row);
+}
+
+/* Links */
+a:link, a:visited {
+  color: var(--link-fg);
+}
+
+a:hover {
+  color: var(--link-hover-color);
+}
+
+/* Tabs */
+.selector-chosen h2 {
+  background: var(--secondary) !important;
+  color: #333 !important;
+}
+
+/* dashboard */
+.dashboard .module table th {
+  background: var(--primary);
+}
+
+/* paginator */
+.paginator a:link, .paginator a:visited {
+  background: var(--primary);
+}
+
+.paginator a:hover {
+  background: var(--button-hover-bg);
+}
+
+/* Message errors */
+.errornote {
+  background: #e53935;
+}
+
+/* Calendar widget */
+.calendar td a:hover {
+  background: var(--selected-row);
+}
+
+/* Add footer styling */
+#footer {
+  background: var(--primary);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  font-size: 14px;
+}
+
+#footer .copyright {
+  color: white;
+}
+
+#footer .tagline {
+  color: var(--secondary);
+  font-weight: bold;
+}
+
+/* Adjust body to account for fixed footer */
+body {
+  margin-bottom: 60px; /* Height of the footer */
+  min-height: 100vh;
+}
+
+/* Fix for dark mode toggle */
+.toggle-theme {
+  background: var(--primary);
+  color: white;
+  border: 1px solid var(--secondary);
+}

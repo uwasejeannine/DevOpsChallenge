@@ -1,0 +1,23 @@
+{% extends "booking/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header" style="background-color: #2E5E3F; color: white;">
+                <h3>Logged Out</h3>
+            </div>
+            <div class="card-body text-center py-5">
+                <div class="alert alert-success mb-4">
+                    <h5 class="alert-heading">You have been successfully logged out!</h5>
+                    <p>Thank you for using our Fitness Class Booking System.</p>
+                </div>
+                
+                <div class="d-grid gap-2 col-md-8 mx-auto">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Log In Again</a>
+                    <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Return to Home Page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "booking/base.html" %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Cancel Booking</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Are you sure you want to cancel this booking?</h5>
+        <p class="card-text">
+            <strong>Class:</strong> {{ booking.fitness_class.name }}<br>
+            <strong>Date:</strong> {{ booking.fitness_class.date }}<br>
+            <strong>Time:</strong> {{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}<br>
+            <strong>Instructor:</strong> {{ booking.fitness_class.instructor }}
+        </p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger style="background-color: #F8B712; border-color: #F8B712; color: white;>Confirm Cancellation</button>
+            <a href="{% url 'my_bookings' %}" class="btn btn-secondary">Back to My Bookings</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

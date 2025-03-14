@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/admin.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Custom navbar styling */
+    .custom-navbar {
+      background-color: #2E5E3F !important;
+      padding: 10px 0;
+    }
+    .navbar-brand {
+      color: #F8B712 !important;
+      font-weight: bold;
+    }
+    .nav-link {
+      color: white !important;
+    }
+    .nav-link:hover {
+      color: #F8B712 !important;
+    }
+    
+    /* Footer styling */
+    #footer {
+      background-color: #2E5E3F;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      z-index: 1000;
+    }
+    #footer p.tagline {
+      color: #F8B712;
+      margin: 5px 0 0 0;
+    }
+    
+    /* Content adjustments for footer */
+    body {
+      margin-bottom: 80px;
+    }
+    #container {
+      min-height: calc(100vh - 80px);
+    }
+  </style>
+{% endblock %}
+
+{% block title %}{{ title }} | Fitness Class Booking Admin{% endblock %}
+
+{% block nav-global %}
+<header class="custom-navbar">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'admin:index' %}">Fitness Booking</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+          </li>
+        </ul>
+        <div class="navbar-nav">
+          <span class="nav-item nav-link text-light">Welcome, {{ request.user.username }}</span>
+          <form id="logout-form" method="post" action="{% url 'admin:logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn nav-link border-0 bg-transparent">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+  <p>&copy; 2025 Fitness Class Booking System</p>
+  <p class="tagline">Stay fit, stay healthy!</p>
+</div>
+{% endblock %}

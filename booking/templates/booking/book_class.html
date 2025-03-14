@@ -1,0 +1,30 @@
+{% extends "booking/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Book Class</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ fitness_class.name }}</h5>
+        <p class="card-text">{{ fitness_class.description }}</p>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Date:</strong> {{ fitness_class.date }}</li>
+                    <li class="list-group-item"><strong>Time:</strong> {{ fitness_class.start_time }} - {{ fitness_class.end_time }}</li>
+                    <li class="list-group-item"><strong>Instructor:</strong> {{ fitness_class.instructor }}</li>
+                </ul>
+            </div>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            <a href="{% url 'classes' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

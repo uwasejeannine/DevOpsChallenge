@@ -1,0 +1,49 @@
+{% extends "booking/base.html" %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h3>Booking Confirmed!</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-success">
+            <h5 class="alert-heading">Your booking has been successfully confirmed!</h5>
+            <p>A confirmation email has been sent to your registered email address.</p>
+        </div>
+        
+        <h5 class="card-title">Booking Details</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <tr>
+                    <th>Class Name</th>
+                    <td>{{ booking.fitness_class.name }}</td>
+                </tr>
+                <tr>
+                    <th>Date</th>
+                    <td>{{ booking.fitness_class.date }}</td>
+                </tr>
+                <tr>
+                    <th>Time</th>
+                    <td>{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}</td>
+                </tr>
+                <tr>
+                    <th>Instructor</th>
+                    <td>{{ booking.fitness_class.instructor }}</td>
+                </tr>
+                <tr>
+                    <th>Booking Reference</th>
+                    <td>#{{ booking.id }}</td>
+                </tr>
+                <tr>
+                    <th>Booking Date</th>
+                    <td>{{ booking.booking_date }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{% url 'classes' %}" class="btn btn-primary">Book Another Class</a>
+            <a href="{% url 'my_bookings' %}" class="btn btn-secondary">View My Bookings</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

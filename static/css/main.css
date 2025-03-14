@@ -1,0 +1,61 @@
+/* Main Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Header and Footer */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Cards and containers */
+.card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.jumbotron {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #F8B712;
+    border-color: #F8B712;
+}
+
+.btn-primary:hover {
+    background-color: #000000;
+    border-color: #F8B712;
+}
+
+.btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+.btn-success:hover {
+    background-color: #113e2e;
+    border-color: #052d1e;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #F8B712;
+    box-shadow: 0 0 0 0.2rem #c9b686;
+}
+
+/* Custom classes */

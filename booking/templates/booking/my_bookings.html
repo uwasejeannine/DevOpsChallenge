@@ -1,0 +1,48 @@
+{% extends "booking/base.html" %}
+{% block content %}
+<h1 class="mb-4">My Bookings</h1>
+
+{% if bookings %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Instructor</th>
+                                    <th>Booking Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td>{{ booking.fitness_class.name }}</td>
+                                    <td>{{ booking.fitness_class.date }}</td>
+                                    <td>{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}</td>
+                                    <td>{{ booking.fitness_class.instructor }}</td>
+                                    <td>{{ booking.booking_date }}</td>
+                                    <td>
+                                        <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-danger btn-sm">Cancel</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p>You haven't booked any classes yet.</p>
+        <a href="{% url 'classes' %}" class="btn btn-primary mt-3">Browse Available Classes</a>
+    </div>
+{% endif %}
+{% endblock %}
