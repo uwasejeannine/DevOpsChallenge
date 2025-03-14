@@ -84,18 +84,13 @@
           import django
           django.setup()
           from django.contrib.auth.models import User
-          if not User.objects.filter(username='{{ admin_username }}').exists():
-              User.objects.create_superuser('{{ admin_username }}', '{{ admin_email }}', '{{ admin_password }}')
+          if not User.objects.filter(username='admin').exists():
+              User.objects.create_superuser('admin', 'admin@example.com', 'adminpassword')
               print('Superuser created successfully')
           else:
               print('Superuser already exists')
           "
-      environment:
-        admin_username: admin
-        admin_email: admin@example.com
-        admin_password: adminpassword
       become: yes
-      no_log: true
 
     - name: Display application URL
       debug:
