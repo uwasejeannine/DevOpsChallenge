@@ -2,20 +2,19 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 
-
 urlpatterns = [
     path('', views.home, name='home'),
-    path('register/', views.register, name='register'),
     path('classes/', views.classes, name='classes'),
     path('book-class/<int:class_id>/', views.book_class, name='book_class'),
     path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('booking-confirmation/<int:booking_id>/', views.booking_confirmation, name='booking_confirmation'),
     path('my-bookings/', views.my_bookings, name='my_bookings'),
+    path('about/', views.about, name='about'),
 
-# Authentication URLs
+
+
+    # Authentication URLs
     path('register/', views.register, name='register'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', auth_views.LogoutView.as_view(template_name='booking/logout.html'), name='logout'),
     
     # Password reset URLs
     path('password-reset/', 
@@ -30,7 +29,4 @@ urlpatterns = [
     path('password-reset-complete/', 
          auth_views.PasswordResetCompleteView.as_view(template_name='booking/password_reset_complete.html'), 
          name='password_reset_complete'),
-        path('custom-logout/', views.custom_logout, name='custom_logout'),
-
 ]
-

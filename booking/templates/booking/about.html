@@ -1,0 +1,695 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}FitBook - About Us{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .about-hero-section {
+        position: relative;
+        height: 50vh;
+        min-height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 20px;
+        overflow: hidden;
+        margin-bottom: 60px;
+    }
+
+    .about-hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("/static/Images/sw3.webp");
+        background-size: cover;
+        background-position: center;
+        z-index: -2;
+    }
+
+    .about-hero-section::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: -1;
+    }
+
+    .about-hero-content {
+        text-align: center;
+        color: white;
+        max-width: 900px;
+        z-index: 1;
+        padding: 40px;
+        border-radius: 10px;
+    }
+
+    .about-hero-content h1 {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .about-hero-content p {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        opacity: 0.9;
+    }
+
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+        color: var(--dark-primary);
+        margin-bottom: 20px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-header h2:after {
+        content: "";
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background-color: var(--secondary-color);
+    }
+
+    .section-header p {
+        font-size: 1.2rem;
+        color: #666;
+        max-width: 800px;
+        margin: 20px auto 0;
+    }
+
+    /* About Section */
+    .about-section {
+        padding: 80px 0;
+    }
+
+    .about-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .about-text {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .about-image {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .about-image img {
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .about-text h3 {
+        font-size: 2rem;
+        color: var(--dark-primary);
+        margin-bottom: 20px;
+    }
+
+    .about-text p {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 20px;
+        line-height: 1.7;
+    }
+
+    /* Team Section */
+    .team-section {
+        padding: 80px 0;
+        background-color: #f9f9f9;
+    }
+
+    .team-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .team-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, a0, 0, 0.1);
+        transition: all 0.4s ease;
+    }
+
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .team-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .team-details {
+        padding: 25px;
+        text-align: center;
+    }
+
+    .team-name {
+        font-size: 1.5rem;
+        color: var(--dark-primary);
+        margin-bottom: 10px;
+    }
+
+    .team-role {
+        font-size: 1rem;
+        color: var(--secondary-color);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .team-bio {
+        font-size: 0.95rem;
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .team-social {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .team-social a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f1f1f1;
+        color: #555;
+        transition: all 0.3s ease;
+    }
+
+    .team-social a:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    /* Values Section */
+    .values-section {
+        padding: 80px 0;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .value-card {
+        padding: 30px;
+        border-radius: 15px;
+        background-color: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s ease;
+        border-top: 5px solid var(--primary-color);
+    }
+
+    .value-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .value-icon {
+        width: 70px;
+        height: 70px;
+        background-color: rgba(17, 159, 165, 0.1);
+        color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .value-title {
+        font-size: 1.4rem;
+        color: var(--dark-primary);
+        margin-bottom: 15px;
+    }
+
+    .value-text {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.7;
+    }
+
+    /* History Timeline */
+    .timeline-section {
+        padding: 80px 0;
+        background-color: #f9f9f9;
+    }
+
+    .timeline {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 4px;
+        background-color: var(--primary-color);
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -2px;
+    }
+
+    .timeline-item {
+        padding: 10px 40px;
+        position: relative;
+        width: 50%;
+        box-sizing: border-box;
+    }
+
+    .timeline-item:nth-child(odd) {
+        left: 0;
+    }
+
+    .timeline-item:nth-child(even) {
+        left: 50%;
+    }
+
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background-color: white;
+        border: 4px solid var(--secondary-color);
+        top: 15px;
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    .timeline-item:nth-child(odd)::after {
+        right: -12px;
+    }
+
+    .timeline-item:nth-child(even)::after {
+        left: -12px;
+    }
+
+    .timeline-content {
+        padding: 20px;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .timeline-date {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin-bottom: 10px;
+    }
+
+    .timeline-title {
+        font-size: 1.3rem;
+        color: var(--dark-primary);
+        margin-bottom: 10px;
+    }
+
+    .timeline-text {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .cta-box {
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        padding: 60px;
+        border-radius: 15px;
+        color: white;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .cta-text {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        opacity: 0.9;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 14px 30px;
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .button:hover {
+        background-color: #d97c18;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        color: white;
+        text-decoration: none;
+    }
+
+    .button-white {
+        background-color: white;
+        color: var(--primary-color);
+    }
+
+    .button-white:hover {
+        background-color: #f0f0f0;
+        color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .about-hero-content h1 {
+            font-size: 2.5rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2rem;
+        }
+        
+        .timeline::after {
+            left: 31px;
+        }
+        
+        .timeline-item {
+            width: 100%;
+            padding-left: 70px;
+            padding-right: 20px;
+        }
+        
+        .timeline-item:nth-child(even) {
+            left: 0;
+        }
+        
+        .timeline-item::after {
+            left: 19px;
+        }
+        
+        .timeline-item:nth-child(odd)::after {
+            right: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="about-hero-section">
+    <div class="about-hero-content">
+        <h1>About FitBook</h1>
+        <p>Your journey to fitness excellence begins with us</p>
+    </div>
+</div>
+
+<!-- Our Story Section -->
+<section class="about-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Story</h2>
+            <p>Learn about how we started and what drives us forward</p>
+        </div>
+        
+        <div class="about-content">
+            <div class="about-text">
+                <h3>From Passion to Purpose</h3>
+                <p>FitBook was founded in 2020 with a simple mission: to make fitness accessible, enjoyable, and effective for everyone. What started as a small studio with a handful of classes has grown into a thriving fitness community.</p>
+                <p>Our founder, Alex Thompson, a former professional athlete, recognized the need for a fitness space that catered to all levels of experience and provided personalized attention in a group setting. This vision has shaped our approach to fitness and wellness.</p>
+                <p>Today, we're proud to offer a wide range of classes taught by expert instructors who are passionate about helping our members achieve their fitness goals.</p>
+            </div>
+            <div class="about-image">
+                <img src="/static/Images/sw3.webp" alt="FitBook studio interior">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Team Section -->
+<section class="team-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Meet Our Team</h2>
+            <p>Expert instructors dedicated to your fitness journey</p>
+        </div>
+        
+        <div class="team-cards">
+            <!-- Team Member 1 -->
+            <div class="team-card">
+                <img src="/static/Images/image5.jpg" alt="Sarah Johnson" class="team-image">
+                <div class="team-details">
+                    <h3 class="team-name">Sarah Johnson</h3>
+                    <p class="team-role">Yoga Instructor</p>
+                    <p class="team-bio">With over 10 years of experience teaching yoga, Sarah specializes in Vinyasa and Hatha styles. Her classes focus on alignment, breath, and mindfulness.</p>
+                    <div class="team-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 2 -->
+            <div class="team-card">
+                <img src="/static/Images/istock3.avif" alt="Michael Chen" class="team-image">
+                <div class="team-details">
+                    <h3 class="team-name">Michael Chen</h3>
+                    <p class="team-role">HIIT & Strength Coach</p>
+                    <p class="team-bio">Michael is a certified personal trainer and nutrition coach who specializes in high-intensity workouts and strength training programs.</p>
+                    <div class="team-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 3 -->
+            <div class="team-card">
+                <img src="/static/Images/istock1.jpg" alt="Emma Thompson" class="team-image">
+                <div class="team-details">
+                    <h3 class="team-name">Emma Thompson</h3>
+                    <p class="team-role">Pilates & Barre Instructor</p>
+                    <p class="team-bio">Emma brings her background in dance and physical therapy to create classes that build core strength, improve posture, and enhance overall flexibility.</p>
+                    <div class="team-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 4 -->
+            <div class="team-card">
+                <img src="/static/Images/istock2.jpg" alt="Jason Wu" class="team-image">
+                <div class="team-details">
+                    <h3 class="team-name">Jason Wu</h3>
+                    <p class="team-role">Spinning & Cardio Coach</p>
+                    <p class="team-bio">Jason's high-energy classes combine music, motivation, and intensity to create an exhilarating cardiovascular workout that pushes your limits.</p>
+                    <div class="team-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values Section -->
+<section class="values-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Core Values</h2>
+            <p>The principles that guide everything we do</p>
+        </div>
+        
+        <div class="values-grid">
+            <!-- Value 1 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="value-title">Passion</h3>
+                <p class="value-text">We're deeply passionate about fitness and wellness. Our enthusiasm drives us to provide exceptional experiences that inspire our members to embrace a healthy lifestyle.</p>
+            </div>
+            
+            <!-- Value 2 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="value-title">Community</h3>
+                <p class="value-text">We foster a supportive, inclusive community where everyone feels welcome, motivated, and connected. Together, we celebrate achievements and overcome challenges.</p>
+            </div>
+            
+            <!-- Value 3 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="value-title">Excellence</h3>
+                <p class="value-text">We strive for excellence in everything we do, from the quality of our instruction to the cleanliness of our facilities. We're committed to continuous improvement.</p>
+            </div>
+            
+            <!-- Value 4 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="value-title">Innovation</h3>
+                <p class="value-text">We embrace new approaches to fitness, staying current with industry trends and research to provide our members with cutting-edge workouts and training methods.</p>
+            </div>
+            
+            <!-- Value 5 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="value-title">Balance</h3>
+                <p class="value-text">We believe in a balanced approach to fitness that incorporates physical activity, proper nutrition, mental wellness, and adequate recovery for sustainable results.</p>
+            </div>
+            
+            <!-- Value 6 -->
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3 class="value-title">Support</h3>
+                <p class="value-text">We provide guidance, motivation, and support throughout our members' fitness journeys, helping them overcome obstacles and achieve their personal goals.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our History Timeline -->
+<section class="timeline-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Journey</h2>
+            <p>Key milestones in our growth and development</p>
+        </div>
+        
+        <div class="timeline">
+            <!-- Timeline Item 1 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2020</div>
+                    <h3 class="timeline-title">The Beginning</h3>
+                    <p class="timeline-text">FitBook was founded with just three instructors and a single studio space, offering yoga and HIIT classes.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 2 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2021</div>
+                    <h3 class="timeline-title">Expansion</h3>
+                    <p class="timeline-text">We expanded our class offerings to include Pilates, Spinning, and Strength Training, and welcomed five new instructors to our team.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 3 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2022</div>
+                    <h3 class="timeline-title">Online Booking Launch</h3>
+                    <p class="timeline-text">We launched our online booking platform, making it easier for members to reserve spots in their favorite classes.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 4 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2023</div>
+                    <h3 class="timeline-title">Community Milestone</h3>
+                    <p class="timeline-text">We celebrated reaching 1,000 active members and introduced specialized workshops and fitness challenges.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 5 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2024</div>
+                    <h3 class="timeline-title">New Location</h3>
+                    <p class="timeline-text">We opened our second location to accommodate growing demand and introduced virtual training options.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 6 -->
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">2025</div>
+                    <h3 class="timeline-title">Today</h3>
+                    <p class="timeline-text">We continue to grow our community, enhance our services, and help our members achieve their fitness goals.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box">
+            <h2 class="cta-title">Ready to Start Your Fitness Journey?</h2>
+            <p class="cta-text">Join our community today and transform your health and fitness with expert-led classes and personalized guidance.</p>
+            <div class="cta-buttons">
+                <a href="{% url 'classes' %}" class="button button-white me-3">View Classes</a>
+                <a href="{% url 'register' %}" class="button">Join Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

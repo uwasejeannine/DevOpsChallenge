@@ -1,9 +1,10 @@
 {% extends "booking/base.html" %}
 {% block content %}
+<div class="container my-5 py-4">
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-dark text-white">
+            <div class="card-header" style="background: linear-gradient(to right, var(--primary-color), var(--accent-color)); color: white;">
                 <h2 class="text-center mb-0">Create an Account</h2>
             </div>
             <div class="card-body p-4">
@@ -85,26 +86,48 @@
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primar" style="background-color: ##000000; border-color: ##000000; color: white; ">Register</button>
+                        <button type="submit" class="button" style="background-color: var(--secondary-color); color: white; padding: 10px 0; border: none; border-radius: 30px; font-weight: 600; transition: all 0.3s ease;">Register</button>
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center py-3">
-                <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                <p class="mb-0">Already have an account? <a href="{% url 'login' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Login here</a></p>
             </div>
         </div>
         
         <div class="card mt-4 shadow-sm border-0">
             <div class="card-body">
-                <h5 class="card-title">Password Requirements</h5>
-                <ul>
-                    <li>Your password must contain at least 8 characters</li>
-                    <li>Your password can't be a commonly used password</li>
-                    <li>Your password can't be entirely numeric</li>
-                    <li>Your password can't be similar to your other personal information</li>
+                <h5 class="card-title" style="color: var(--dark-primary);">Password Requirements</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item border-0 ps-0"><i class="fas fa-check-circle me-2" style="color: var(--secondary-color);"></i> Your password must contain at least 8 characters</li>
+                    <li class="list-group-item border-0 ps-0"><i class="fas fa-check-circle me-2" style="color: var(--secondary-color);"></i> Your password can't be a commonly used password</li>
+                    <li class="list-group-item border-0 ps-0"><i class="fas fa-check-circle me-2" style="color: var(--secondary-color);"></i> Your password can't be entirely numeric</li>
+                    <li class="list-group-item border-0 ps-0"><i class="fas fa-check-circle me-2" style="color: var(--secondary-color);"></i> Your password can't be similar to your other personal information</li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Add hover effect to register button
+    document.addEventListener('DOMContentLoaded', function() {
+        const registerBtn = document.querySelector('.button');
+        
+        registerBtn.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#d97c18'; // Darker shade of secondary color
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+        });
+        
+        registerBtn.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'var(--secondary-color)';
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

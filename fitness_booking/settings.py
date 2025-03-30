@@ -75,7 +75,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'fitness_booking'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'GanzAfrica6'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),  # Changed 'db' to 'localhost' for local pgAdmin setup
+        'HOST': os.getenv('DB_HOST', 'localhost'),  
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }

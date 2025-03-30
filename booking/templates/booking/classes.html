@@ -1,46 +1,700 @@
 {% extends "booking/base.html" %}
-{% block content %}
-<h1 class="mb-4">Available Fitness Classes</h1>
+{% load static %}
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    {% for class in classes %}
-    <div class="col">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ class.name }}</h5>
-                <p class="card-text">{{ class.description }}</p>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item"><strong>Date:</strong> {{ class.date }}</li>
-                    <li class="list-group-item"><strong>Time:</strong> {{ class.start_time }} - {{ class.end_time }}</li>
-                    <li class="list-group-item"><strong>Instructor:</strong> {{ class.instructor }}</li>
-                    <li class="list-group-item">
-                        <strong>Availability:</strong>
-                        {% if class.is_full %}
-                            <span class="badge bg-danger">Full</span>
-                        {% else %}
-                            <span class="badge bg-success style="background-color: #000000 ;">Available</span>
-                        {% endif %}
-                    </li>
-                </ul>
-                
-                {% if class.is_booked %}
-                    {% for booking in user.booking_set.all %}
-                        {% if booking.fitness_class.id == class.id %}
-                            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-danger">Cancel Booking</a>
-                        {% endif %}
-                    {% endfor %}
-                {% elif not class.is_full %}
-                    <a href="{% url 'book_class' class.id %}" class="btn btn-primary">Book Now</a>
-                {% else %}
-                    <button class="btn btn-secondary" disabled>Class Full</button>
-                {% endif %}
+{% block extra_css %}
+<style>
+    /* Filter Section */
+    .filter-section {
+        background-color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .filter-title {
+        font-size: 1.2rem;
+        color: var(--dark-primary);
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-btn {
+        background-color: #f1f1f1;
+        border: none;
+        border-radius: 30px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    /* Class Count Badge */
+    .class-count {
+        background-color: var(--secondary-color);
+        color: white;
+        border-radius: 30px;
+        padding: 5px 15px;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-left: 15px;
+    }
+    
+    /* Animation for new classes */
+    .new-class-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Promotional Banner */
+    .promo-banner {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 40px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .promo-banner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 100%;
+        background-image: url('/api/placeholder/200/200');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.2;
+    }
+    
+    .promo-content {
+        width: 70%;
+    }
+    
+    .promo-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .promo-text {
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .promo-btn {
+        background-color: white;
+        color: var(--primary-color);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .promo-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    /* Testimonial Section */
+    .testimonial-section {
+        padding: 40px 0;
+        margin-top: 60px;
+        background-color: #f9f9f9;
+        border-radius: 15px;
+    }
+    
+    .testimonial-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        position: relative;
+        margin-top: 30px;
+    }
+    
+    .testimonial-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        position: absolute;
+        top: -35px;
+        left: 30px;
+        border: 5px solid white;
+        background-color: #f0f0f0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .testimonial-avatar i {
+        font-size: 2rem;
+        color: #999;
+    }
+    
+    .testimonial-content {
+        margin-top: 25px;
+        position: relative;
+    }
+    
+    .testimonial-content::before {
+        content: """;
+        position: absolute;
+        top: -40px;
+        left: 0;
+        font-size: 5rem;
+        color: rgba(0, 0, 0, 0.1);
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+    
+    .testimonial-text {
+        font-style: italic;
+        color: #555;
+        margin-bottom: 20px;
+    }
+    
+    .testimonial-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--dark-primary);
+    }
+    
+    .testimonial-role {
+        color: var(--secondary-color);
+        font-size: 0.9rem;
+    }
+    
+    /* Limited Spots Indicator */
+    .limited-spots {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border-radius: 5px;
+        padding: 8px 12px;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    
+    .limited-spots i {
+        margin-right: 8px;
+    }
+    
+    .spots-bar {
+        height: 5px;
+        background-color: #e9ecef;
+        border-radius: 3px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+    
+    .spots-progress {
+        height: 100%;
+        background-color: #dc3545;
+        border-radius: 3px;
+        width: 20%;
+    }
+    
+    /* Class difficulty indicators */
+    .difficulty-indicator {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .difficulty-dots {
+        display: flex;
+        margin-left: 10px;
+    }
+    
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+        background-color: #ddd;
+    }
+    
+    .dot.active {
+        background-color: var(--secondary-color);
+    }
+    
+    /* Class Cards styling */
+    .class-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        transition: all 0.4s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: none;
+    }
+
+    .class-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .class-header {
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        color: white;
+        padding: 20px;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .class-body {
+        padding: 25px;
+        flex-grow: 1;
+    }
+
+    .class-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .class-meta i {
+        color: var(--secondary-color);
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+
+    .class-description {
+        margin-bottom: 20px;
+        color: #666;
+    }
+
+    .class-footer {
+        padding: 15px 25px 25px;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 10px 30px;
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+
+    .button:hover {
+        background-color: #d97c18;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        color: white;
+        text-decoration: none;
+    }
+
+    .button-danger {
+        background-color: #dc3545;
+    }
+
+    .button-danger:hover {
+        background-color: #bd2130;
+    }
+
+    .button-disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .button-disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .badge-available {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .badge-full {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .section-header h1 {
+        font-size: 2.5rem;
+        color: var(--dark-primary);
+        margin-bottom: 20px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-header h1:after {
+        content: "";
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background-color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="section-header">
+        <h1>Available Fitness Classes</h1>
+        <p>Find your perfect class and book your spot today!</p>
+    </div>
+    
+    <!-- Promotional Banner -->
+    <div class="promo-banner">
+        <div class="promo-content">
+            <h2 class="promo-title">🎁 New Member Special: 30% Off</h2>
+            <p class="promo-text">Join FitBook today and get 30% off your first month! Unlimited access to all premium classes.</p>
+            <a href="#" class="promo-btn">Get Started Now</a>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="filter-title">Filter by Class Type</h3>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All Classes</button>
+                    <button class="filter-btn" data-filter="yoga">Yoga</button>
+                    <button class="filter-btn" data-filter="hiit">HIIT</button>
+                    <button class="filter-btn" data-filter="pilates">Pilates</button>
+                    <button class="filter-btn" data-filter="spinning">Spinning</button>
+                    <button class="filter-btn" data-filter="strength">Strength</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3 class="filter-title">Filter by Time</h3>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-time="all">All Times</button>
+                    <button class="filter-btn" data-time="morning">Morning</button>
+                    <button class="filter-btn" data-time="afternoon">Afternoon</button>
+                    <button class="filter-btn" data-time="evening">Evening</button>
+                </div>
             </div>
         </div>
     </div>
-    {% empty %}
-    <div class="col">
-        <div class="alert alert-info">No classes available at the moment.</div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Classes This Week <span class="class-count">{{ classes|length }}</span></h2>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-sort me-2"></i>
+            <select class="form-select form-select-sm" style="width: auto;">
+                <option>Sort by Date</option>
+                <option>Sort by Popularity</option>
+                <option>Sort by Duration</option>
+            </select>
+        </div>
     </div>
-    {% endfor %}
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for class in classes %}
+        <div class="col">
+            <div class="class-card" data-category="{{ class.category|default:'yoga' }}" data-time="{{ class.time_of_day|default:'morning' }}">
+                {% if forloop.counter <= 2 %}
+                <div class="new-class-badge">New!</div>
+                {% endif %}
+                <div class="class-header">
+                    {{ class.name }}
+                </div>
+                <div class="class-body">
+                    <p class="class-description">{{ class.description }}</p>
+                    
+                    <!-- Difficulty indicator -->
+                    <div class="difficulty-indicator">
+                        <small>Difficulty:</small>
+                        <div class="difficulty-dots">
+                            <div class="dot active"></div>
+                            <div class="dot {% if class.name == 'HIIT Workout' or class.name == 'Strength Training' %}active{% endif %}"></div>
+                            <div class="dot {% if class.name == 'HIIT Workout' %}active{% endif %}"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="class-meta">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ class.date }}</span>
+                    </div>
+                    <div class="class-meta">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ class.start_time }} - {{ class.end_time }}</span>
+                    </div>
+                    <div class="class-meta">
+                        <i class="fas fa-user"></i>
+                        <span>{{ class.instructor }}</span>
+                    </div>
+                    <div class="class-meta">
+                        <i class="fas fa-users"></i>
+                        <span>
+                            <strong>Capacity: </strong>
+                            {% if class.is_full %}
+                                <span class="badge-full">Full</span>
+                            {% else %}
+                                <span class="badge-available">{{ class.available_slots|default:"5" }} Spots Available</span>
+                                {% if forloop.counter == 3 %}
+                                <div class="limited-spots">
+                                    <i class="fas fa-exclamation-circle"></i> 
+                                    Only 2 spots left!
+                                    <div class="spots-bar">
+                                        <div class="spots-progress" style="width: 80%;"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="class-footer">
+                    {% if class.is_booked %}
+                        {% for booking in user.booking_set.all %}
+                            {% if booking.fitness_class.id == class.id %}
+                                <a href="{% url 'cancel_booking' booking.id %}" class="button button-danger">Cancel Booking</a>
+                            {% endif %}
+                        {% endfor %}
+                    {% elif not class.is_full %}
+                        <a href="{% url 'book_class' class.id %}" class="button">Book Now</a>
+                    {% else %}
+                        <button class="button button-disabled" disabled>Class Full</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-4">
+                <i class="fas fa-info-circle me-2"></i> No classes available at the moment.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Testimonial Section -->
+    <section class="testimonial-section mt-5">
+        <div class="container">
+            <div class="section-header">
+                <h2>What Our Members Say</h2>
+                <p>Hear from people who've transformed their fitness journey with us</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-content">
+                            <p class="testimonial-text">"I've tried many fitness studios, but FitBook's classes and booking system are simply the best. The yoga classes have completely transformed my flexibility!"</p>
+                            <div class="testimonial-name">Sarah Johnson</div>
+                            <div class="testimonial-role">Member since 2024</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-content">
+                            <p class="testimonial-text">"The HIIT workouts are challenging but so worth it! I've lost 15 pounds in just 2 months. The instructors are motivating and professional."</p>
+                            <div class="testimonial-name">Michael Chen</div>
+                            <div class="testimonial-role">Member since 2023</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-content">
+                            <p class="testimonial-text">"Being able to book classes right from my phone has made staying consistent so much easier. The variety of classes keeps things interesting!"</p>
+                            <div class="testimonial-name">Emma Thompson</div>
+                            <div class="testimonial-role">Member since 2024</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Floating Booking Assistant -->
+    <div id="booking-assistant" style="position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-color); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; z-index: 1000;">
+        <i class="fas fa-calendar-check" style="font-size: 1.5rem;"></i>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state on buttons
+                const group = this.closest('.filter-group');
+                group.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Apply filters
+                applyFilters();
+            });
+        });
+        
+        function applyFilters() {
+            const categoryFilter = document.querySelector('.filter-btn[data-filter].active').getAttribute('data-filter');
+            const timeFilter = document.querySelector('.filter-btn[data-time].active').getAttribute('data-time');
+            
+            document.querySelectorAll('.class-card').forEach(card => {
+                const category = card.getAttribute('data-category');
+                const time = card.getAttribute('data-time');
+                
+                const matchesCategory = categoryFilter === 'all' || category === categoryFilter;
+                const matchesTime = timeFilter === 'all' || time === timeFilter;
+                
+                if (matchesCategory && matchesTime) {
+                    card.closest('.col').style.display = 'block';
+                } else {
+                    card.closest('.col').style.display = 'none';
+                }
+            });
+            
+            // Update class count
+            updateClassCount();
+        }
+        
+        function updateClassCount() {
+            const visibleClasses = document.querySelectorAll('.class-card[style="display: block"], .class-card:not([style*="display"])').length;
+            document.querySelector('.class-count').textContent = visibleClasses;
+        }
+        
+        // Add hover effect on class cards
+        const classCards = document.querySelectorAll('.class-card');
+        classCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+                this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+        
+        // Floating Booking Assistant
+        const bookingAssistant = document.getElementById('booking-assistant');
+        let isExpanded = false;
+        
+        bookingAssistant.addEventListener('click', function() {
+            if (!isExpanded) {
+                this.innerHTML = `
+                    <div style="width: 220px; text-align: left; padding: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong>Need Help?</strong>
+                            <i class="fas fa-times" id="close-assistant"></i>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-bottom: 10px;">Looking for a specific class or time?</div>
+                        <button class="btn btn-sm btn-light w-100 mb-2">Find Perfect Class</button>
+                        <button class="btn btn-sm btn-outline-light w-100">Contact Us</button>
+                    </div>
+                `;
+                this.style.width = '250px';
+                this.style.height = 'auto';
+                this.style.borderRadius = '15px';
+                this.style.right = '20px';
+                isExpanded = true;
+                
+                document.getElementById('close-assistant').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    collapseAssistant();
+                });
+            }
+        });
+        
+        function collapseAssistant() {
+            bookingAssistant.innerHTML = '<i class="fas fa-calendar-check" style="font-size: 1.5rem;"></i>';
+            bookingAssistant.style.width = '60px';
+            bookingAssistant.style.height = '60px';
+            bookingAssistant.style.borderRadius = '50%';
+            isExpanded = false;
+        }
+        
+        // Add special effects
+        setTimeout(function() {
+            const promoButton = document.querySelector('.promo-btn');
+            promoButton.classList.add('animate__animated', 'animate__pulse');
+            promoButton.style.animationIterationCount = 'infinite';
+            promoButton.style.animationDuration = '2s';
+        }, 2000);
+    });
+</script>
 {% endblock %}

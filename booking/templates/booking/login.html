@@ -1,44 +1,69 @@
 {% extends "booking/base.html" %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-dark text-white">
-                <h2 class="text-center mb-0">Login</h2>
-            </div>
-            <div class="card-body p-4">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">Remember me</label>
-                    </div>
-                    
-                    <a href="{% url 'login' %}" class="btn btn-lg" style="background-color: #F8B712; border-color: #F8B712; color: white;">Login to Book Classes</a>
-                    
-                    {% if form.errors %}
-                        <div class="alert alert-danger mt-3">
-                            Your username and password didn't match. Please try again.
+<div class="container my-5 py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header" style="background: linear-gradient(to right, var(--primary-color), var(--accent-color)); color: white;">
+                    <h2 class="text-center mb-0">Login</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
                         </div>
-                    {% endif %}
-                </form>
-            </div>
-            <div class="card-footer text-center py-3">
-                <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
-                <p class="mt-2 mb-0"><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="button" style="background-color: var(--secondary-color); color: white; padding: 12px 0; border: none; border-radius: 30px; font-weight: 600; transition: all 0.3s ease;">Login to Book Classes</button>
+                        </div>
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger mt-3">
+                                Your username and password didn't match. Please try again.
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Register here</a></p>
+                    <p class="mt-2 mb-0"><a href="{% url 'password_reset' %}" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Forgot your password?</a></p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    // Add hover effect to login button
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginBtn = document.querySelector('.button');
+        
+        loginBtn.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#d97c18'; // Darker shade of secondary color
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+        });
+        
+        loginBtn.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'var(--secondary-color)';
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}
