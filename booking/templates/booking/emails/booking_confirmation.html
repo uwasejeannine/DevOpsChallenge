@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #4A6FA5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #E69A3A;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Booking Confirmation</h1>
+    </div>
+    <div class="content">
+        <p>Hi {{ user.first_name }},</p>
+        <p>Thank you for booking with FitBook! Your class reservation has been confirmed.</p>
+        
+        <div class="details">
+            <h3>Booking Details:</h3>
+            <p><strong>Class:</strong> {{ booking.fitness_class.name }}</p>
+            <p><strong>Date:</strong> {{ booking.fitness_class.date }}</p>
+            <p><strong>Time:</strong> {{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}</p>
+            <p><strong>Instructor:</strong> {{ booking.fitness_class.instructor }}</p>
+            <p><strong>Booking Reference:</strong> #{{ booking.id }}</p>
+        </div>
+        
+        <p>Please arrive 10 minutes before the class starts. Don't forget to bring appropriate workout clothes and a water bottle.</p>
+        
+        <p>If you need to cancel your booking, you can do so through your account or by clicking the button below:</p>
+        
+        <a href="{{ site_url }}{% url 'cancel_booking' booking.id %}" class="button">Cancel Booking</a>
+        
+        <p>We look forward to seeing you in class!</p>
+        
+        <p>Best regards,<br>The FitBook Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+        <p>&copy; 2025 FitBook. All rights reserved.</p>
+    </div>
+</body>
+</html>

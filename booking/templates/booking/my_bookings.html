@@ -408,7 +408,15 @@
         <p>Manage all your fitness class bookings in one place</p>
     </div>
     
-    {% if bookings %}
+    <!-- Debug Info Section - Remove in production -->
+    <div class="alert alert-info mb-4">
+        <h5><i class="fas fa-info-circle me-2"></i> Debug Information</h5>
+        <p>Bookings found: {{ bookings.count }}</p>
+        <p>Today's date: {{ today }}</p>
+        <p>Has bookings variable: {% if bookings %}Yes{% else %}No{% endif %}</p>
+    </div>
+    
+    {% if bookings.exists %}
       <!-- Stats Section -->
       <div class="stats-cards">
         <div class="stat-card">
@@ -416,7 +424,7 @@
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div class="stat-info">
-                <h3>{{ bookings|length }}</h3>
+                <h3>{{ bookings.count }}</h3>
                 <p>Total Bookings</p>
             </div>
         </div>
@@ -476,9 +484,9 @@
                             <td>{{ booking.fitness_class.date }}</td>
                             <td>{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}</td>
                             <td>{{ booking.fitness_class.instructor }}</td>
-                            <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.booking_date|date:"M d, Y"|default:"Not available" }}</td>
                             <td>
-                                {% if booking.fitness_class.date|date:"Y-m-d" >= today|date:"Y-m-d" %}
+                                {% if booking.fitness_class.date >= today %}
                                 <span class="badge bg-primary">Upcoming</span>
                                 {% else %}
                                 <span class="badge bg-success">Completed</span>
@@ -486,13 +494,34 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-info-soft me-2 view-details-btn" data-booking-id="{{ booking.id }}" data-bs-toggle="modal" data-bs-target="#viewDetailsModal" data-class-name="{{ booking.fitness_class.name }}" data-class-date="{{ booking.fitness_class.date }}" data-class-time="{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}" data-class-instructor="{{ booking.fitness_class.instructor }}" data-booking-date="{{ booking.booking_date }}">
+                                    <button class="btn btn-sm btn-info-soft me-2 view-details-btn" 
+                                        data-booking-id="{{ booking.id }}" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#viewDetailsModal" 
+                                        data-class-name="{{ booking.fitness_class.name }}" 
+                                        data-class-date="{{ booking.fitness_class.date }}" 
+                                        data-class-time="{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}" 
+                                        data-class-instructor="{{ booking.fitness_class.instructor }}" 
+                                        data-booking-date="{{ booking.booking_date|date:'M d, Y'|default:'Not available' }}"
+                                        data-user-name="{{ booking.user.get_full_name|default:booking.user.username }}"
+                                        data-user-email="{{ booking.user.email }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger-soft cancel-booking-btn" data-booking-id="{{ booking.id }}" data-bs-toggle="modal" data-bs-target="#cancelBookingModal" data-class-name="{{ booking.fitness_class.name }}">
+                                    <button class="btn btn-sm btn-danger-soft cancel-booking-btn" 
+                                        data-booking-id="{{ booking.id }}" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#cancelBookingModal" 
+                                        data-class-name="{{ booking.fitness_class.name }}">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-calendar-times text-muted mb-3" style="font-size: 2rem;"></i>
+                                <p class="mt-2">No bookings found. Please try again or check your booking status.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -615,6 +644,16 @@
                         <div class="details-item">
                             <span class="details-label">Booking Date</span>
                             <span class="details-value" id="modal-booking-date"></span>
+                        </div>
+                        
+                        <!-- User Profile Information -->
+                        <div class="details-item">
+                            <span class="details-label">Booked By</span>
+                            <span class="details-value" id="modal-user-name"></span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Contact Email</span>
+                            <span class="details-value" id="modal-user-email"></span>
                         </div>
                     </div>
                     
@@ -789,6 +828,8 @@
                 const classTime = button.getAttribute('data-class-time');
                 const classInstructor = button.getAttribute('data-class-instructor');
                 const bookingDate = button.getAttribute('data-booking-date');
+                const userName = button.getAttribute('data-user-name');
+                const userEmail = button.getAttribute('data-user-email');
                 
                 // Update the modal's content
                 document.getElementById('modal-class-name').textContent = className;
@@ -796,6 +837,14 @@
                 document.getElementById('modal-class-time').textContent = classTime;
                 document.getElementById('modal-class-instructor').textContent = classInstructor;
                 document.getElementById('modal-booking-date').textContent = bookingDate;
+                
+                // Update user profile info
+                if (document.getElementById('modal-user-name')) {
+                    document.getElementById('modal-user-name').textContent = userName || 'Not available';
+                }
+                if (document.getElementById('modal-user-email')) {
+                    document.getElementById('modal-user-email').textContent = userEmail || 'Not available';
+                }
             });
         }
         
@@ -826,6 +875,33 @@
                     // The actual cancellation will happen when the href is followed
                 });
             });
+        }
+        
+        // Class cards hover effect
+        const classCards = document.querySelectorAll('.class-card');
+        classCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+                this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+        
+        // Optional: Add animation for empty state icon
+        const emptyStateIcon = document.querySelector('.empty-state i');
+        if (emptyStateIcon) {
+            emptyStateIcon.style.transition = 'all 0.5s ease';
+            
+            setInterval(() => {
+                emptyStateIcon.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    emptyStateIcon.style.transform = 'scale(1)';
+                }, 500);
+            }, 3000);
         }
     });
 </script>

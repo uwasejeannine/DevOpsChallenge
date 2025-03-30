@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to FitBook</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #0d9b98;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #ef8f20;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .social-icons {
+            margin-top: 15px;
+        }
+        .social-icons a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #0d9b98;
+            font-size: 20px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">FitBook</div>
+        </div>
+        <div class="content">
+            <h2>Welcome to FitBook, {{ user.first_name }}!</h2>
+            <p>Thank you for joining our fitness community. We're excited to have you on board!</p>
+            <p>With FitBook, you can:</p>
+            <ul>
+                <li>Book a variety of fitness classes with expert instructors</li>
+                <li>Manage all your bookings in one place</li>
+                <li>Receive reminders and updates about your classes</li>
+            </ul>
+            <p>Ready to get started? Explore our available classes and book your first session!</p>
+            <div style="text-align: center;">
+                <a href="{{ site_url }}{% url 'classes' %}" class="button">Browse Classes</a>
+            </div>
+            <p>If you have any questions or need assistance, feel free to contact our support team.</p>
+            <p>Stay fit and healthy!</p>
+            <p><strong>The FitBook Team</strong></p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 FitBook - All Rights Reserved</p>
+            <p>123 Fitness Street, City</p>
+            <div class="social-icons">
+                <a href="#">F</a>
+                <a href="#">T</a>
+                <a href="#">I</a>
+                <a href="#">Y</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -10,23 +10,23 @@ urlpatterns = [
     path('booking-confirmation/<int:booking_id>/', views.booking_confirmation, name='booking_confirmation'),
     path('my-bookings/', views.my_bookings, name='my_bookings'),
     path('about/', views.about, name='about'),
-
-
-
+    
     # Authentication URLs
     path('register/', views.register, name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name='booking/login.html'), name='login'),
+    path('logout/', views.custom_logout, name='logout'),
     
     # Password reset URLs
-    path('password-reset/', 
-         auth_views.PasswordResetView.as_view(template_name='booking/password_reset.html'), 
+    path('password-reset/',
+         auth_views.PasswordResetView.as_view(template_name='booking/password_reset.html'),
          name='password_reset'),
-    path('password-reset/done/', 
-         auth_views.PasswordResetDoneView.as_view(template_name='booking/password_reset_done.html'), 
+    path('password-reset/done/',
+         auth_views.PasswordResetDoneView.as_view(template_name='booking/password_reset_done.html'),
          name='password_reset_done'),
-    path('password-reset-confirm/<uidb64>/<token>/', 
-         auth_views.PasswordResetConfirmView.as_view(template_name='booking/password_reset_confirm.html'), 
+    path('password-reset-confirm/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(template_name='booking/password_reset_confirm.html'),
          name='password_reset_confirm'),
-    path('password-reset-complete/', 
-         auth_views.PasswordResetCompleteView.as_view(template_name='booking/password_reset_complete.html'), 
+    path('password-reset-complete/',
+         auth_views.PasswordResetCompleteView.as_view(template_name='booking/password_reset_complete.html'),
          name='password_reset_complete'),
 ]

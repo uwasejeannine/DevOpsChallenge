@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Cancellation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #0d9b98;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .cancelled-class {
+            background-color: #f2f2f2;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .cancelled-class h3 {
+            margin-top: 0;
+            color: #0d9b98;
+            text-decoration: line-through;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            width: 140px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #ef8f20;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .recommendation {
+            background-color: #e8f4f4;
+            border-left: 4px solid #0d9b98;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">FitBook</div>
+        </div>
+        <div class="content">
+            <h2>Booking Cancellation</h2>
+            <p>Hello {{ user.first_name }},</p>
+            <p>Your booking has been cancelled as requested. Here are the details of the cancelled class:</p>
+            
+            <div class="cancelled-class">
+                <h3>{{ booking.fitness_class.name }}</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Date:</div>
+                    <div>{{ booking.fitness_class.date }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Time:</div>
+                    <div>{{ booking.fitness_class.start_time }} - {{ booking.fitness_class.end_time }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Instructor:</div>
+                    <div>{{ booking.fitness_class.instructor }}</div>
+                </div>
+            </div>
+            
+            <div class="recommendation">
+                <p><strong>Looking for something else?</strong> Check out our other classes that might fit your schedule:</p>
+                <ul>
+                    <li>Browse classes by category (Yoga, HIIT, Pilates)</li>
+                    <li>Filter by your preferred time slots</li>
+                    <li>Find classes with your favorite instructors</li>
+                </ul>
+            </div>
+            
+            <p>We hope to see you in another class soon!</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}{% url 'classes' %}" class="button">Browse Classes</a>
+            </div>
+            
+            <p>If you have any questions or need assistance, feel free to contact our support team.</p>
+            <p><strong>The FitBook Team</strong></p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 FitBook - All Rights Reserved</p>
+            <p>123 Fitness Street, City | (123) 456-7890</p>
+        </div>
+    </div>
+</body>
+</html>

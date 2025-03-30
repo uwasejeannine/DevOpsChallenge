@@ -43,6 +43,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'booking.middleware.UserProfileMiddleware',  # Replace 'booking' with your app name
 ]
 
 ROOT_URLCONF = 'fitness_booking.urls'
@@ -51,7 +52,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],  # This is important
-        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,22 +130,13 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Login redirects
 LOGIN_REDIRECT_URL = 'classes'
 LOGIN_URL = 'login'
-
-# Email settings
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'mailhog')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 1025))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@fitnessbooking.com')
-
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-
-# Login and Logout redirects
-LOGIN_REDIRECT_URL = 'classes'
-LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
+
+# Email Configuration for Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'jeannineuwasee@gmail.com' 
+EMAIL_HOST_PASSWORD = 'nfic tvma epsj lssm'  # App password (I've removed the ** around it)
+DEFAULT_FROM_EMAIL = 'jeannineuwasee@gmail.com'

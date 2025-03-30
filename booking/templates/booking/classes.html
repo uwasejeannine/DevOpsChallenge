@@ -177,7 +177,7 @@
     }
     
     .testimonial-content::before {
-        content: """;
+        content: "";
         position: absolute;
         top: -40px;
         left: 0;
@@ -394,6 +394,66 @@
         height: 4px;
         background-color: var(--secondary-color);
     }
+    
+    /* Featured Classes Section */
+    .featured-section {
+        margin-bottom: 50px;
+    }
+    
+    .featured-tag {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: var(--accent-color);
+        color: white;
+        padding: 8px 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-top-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        z-index: 3;
+    }
+    
+    /* Load More Button */
+    .load-more-container {
+        text-align: center;
+        margin: 30px 0 50px;
+    }
+    
+    .load-more-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .load-more-btn:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Loading animation */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 </style>
 {% endblock %}
 
@@ -439,96 +499,183 @@
         </div>
     </div>
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Classes This Week <span class="class-count">{{ classes|length }}</span></h2>
-        <div class="d-flex align-items-center">
-            <i class="fas fa-sort me-2"></i>
-            <select class="form-select form-select-sm" style="width: auto;">
-                <option>Sort by Date</option>
-                <option>Sort by Popularity</option>
-                <option>Sort by Duration</option>
-            </select>
+    <!-- Featured Classes Section -->
+    <div class="featured-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Featured Classes</h2>
         </div>
-    </div>
-
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for class in classes %}
-        <div class="col">
-            <div class="class-card" data-category="{{ class.category|default:'yoga' }}" data-time="{{ class.time_of_day|default:'morning' }}">
-                {% if forloop.counter <= 2 %}
-                <div class="new-class-badge">New!</div>
-                {% endif %}
-                <div class="class-header">
-                    {{ class.name }}
-                </div>
-                <div class="class-body">
-                    <p class="class-description">{{ class.description }}</p>
-                    
-                    <!-- Difficulty indicator -->
-                    <div class="difficulty-indicator">
-                        <small>Difficulty:</small>
-                        <div class="difficulty-dots">
-                            <div class="dot active"></div>
-                            <div class="dot {% if class.name == 'HIIT Workout' or class.name == 'Strength Training' %}active{% endif %}"></div>
-                            <div class="dot {% if class.name == 'HIIT Workout' %}active{% endif %}"></div>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for class in featured_classes %}
+            <div class="col">
+                <div class="class-card" data-category="{{ class.category|default:'yoga' }}" data-time="{{ class.time_of_day|default:'morning' }}">
+                    <div class="featured-tag">Featured</div>
+                    <div class="new-class-badge">New!</div>
+                    <div class="class-header">
+                        {{ class.name }}
+                    </div>
+                    <div class="class-body">
+                        <p class="class-description">{{ class.description }}</p>
+                        
+                        <!-- Difficulty indicator -->
+                        <div class="difficulty-indicator">
+                            <small>Difficulty:</small>
+                            <div class="difficulty-dots">
+                                <div class="dot active"></div>
+                                <div class="dot {% if class.name == 'HIIT Workout' or class.name == 'Strength Training' %}active{% endif %}"></div>
+                                <div class="dot {% if class.name == 'HIIT Workout' %}active{% endif %}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="class-meta">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ class.date }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ class.start_time }} - {{ class.end_time }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-user"></i>
+                            <span>{{ class.instructor }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-users"></i>
+                            <span>
+                                <strong>Capacity: </strong>
+                                {% if class.is_full %}
+                                    <span class="badge-full">Full</span>
+                                {% else %}
+                                    <span class="badge-available">{{ class.available_slots|default:"5" }} Spots Available</span>
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
-                    
-                    <div class="class-meta">
-                        <i class="fas fa-calendar"></i>
-                        <span>{{ class.date }}</span>
-                    </div>
-                    <div class="class-meta">
-                        <i class="fas fa-clock"></i>
-                        <span>{{ class.start_time }} - {{ class.end_time }}</span>
-                    </div>
-                    <div class="class-meta">
-                        <i class="fas fa-user"></i>
-                        <span>{{ class.instructor }}</span>
-                    </div>
-                    <div class="class-meta">
-                        <i class="fas fa-users"></i>
-                        <span>
-                            <strong>Capacity: </strong>
-                            {% if class.is_full %}
-                                <span class="badge-full">Full</span>
-                            {% else %}
-                                <span class="badge-available">{{ class.available_slots|default:"5" }} Spots Available</span>
-                                {% if forloop.counter == 3 %}
-                                <div class="limited-spots">
-                                    <i class="fas fa-exclamation-circle"></i> 
-                                    Only 2 spots left!
-                                    <div class="spots-bar">
-                                        <div class="spots-progress" style="width: 80%;"></div>
-                                    </div>
-                                </div>
+                    <div class="class-footer">
+                        {% if class.is_booked %}
+                            {% for booking in user.booking_set.all %}
+                                {% if booking.fitness_class.id == class.id %}
+                                    <a href="{% url 'cancel_booking' booking.id %}" class="button button-danger">Cancel Booking</a>
                                 {% endif %}
-                            {% endif %}
-                        </span>
+                            {% endfor %}
+                        {% elif not class.is_full %}
+                            <a href="{% url 'book_class' class.id %}" class="button">Book Now</a>
+                        {% else %}
+                            <button class="button button-disabled" disabled>Class Full</button>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="class-footer">
-                    {% if class.is_booked %}
-                        {% for booking in user.booking_set.all %}
-                            {% if booking.fitness_class.id == class.id %}
-                                <a href="{% url 'cancel_booking' booking.id %}" class="button button-danger">Cancel Booking</a>
-                            {% endif %}
-                        {% endfor %}
-                    {% elif not class.is_full %}
-                        <a href="{% url 'book_class' class.id %}" class="button">Book Now</a>
-                    {% else %}
-                        <button class="button button-disabled" disabled>Class Full</button>
-                    {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-4">
+                    <i class="fas fa-info-circle me-2"></i> No featured classes available.
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info text-center py-4">
-                <i class="fas fa-info-circle me-2"></i> No classes available at the moment.
+    </div>
+    
+    <!-- Regular Classes Section -->
+    <div class="regular-classes-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>All Classes <span class="class-count">{{ all_classes|length }}</span></h2>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-sort me-2"></i>
+                <select class="form-select form-select-sm" style="width: auto;">
+                    <option>Sort by Date</option>
+                    <option>Sort by Popularity</option>
+                    <option>Sort by Duration</option>
+                </select>
             </div>
         </div>
-        {% endfor %}
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="classes-container">
+            {% for class in initial_classes %}
+            <div class="col class-item">
+                <div class="class-card" data-category="{{ class.category|default:'yoga' }}" data-time="{{ class.time_of_day|default:'morning' }}">
+                    {% if forloop.counter <= 2 %}
+                    <div class="new-class-badge">New!</div>
+                    {% endif %}
+                    <div class="class-header">
+                        {{ class.name }}
+                    </div>
+                    <div class="class-body">
+                        <p class="class-description">{{ class.description }}</p>
+                        
+                        <!-- Difficulty indicator -->
+                        <div class="difficulty-indicator">
+                            <small>Difficulty:</small>
+                            <div class="difficulty-dots">
+                                <div class="dot active"></div>
+                                <div class="dot {% if class.name == 'HIIT Workout' or class.name == 'Strength Training' %}active{% endif %}"></div>
+                                <div class="dot {% if class.name == 'HIIT Workout' %}active{% endif %}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="class-meta">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ class.date }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ class.start_time }} - {{ class.end_time }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-user"></i>
+                            <span>{{ class.instructor }}</span>
+                        </div>
+                        <div class="class-meta">
+                            <i class="fas fa-users"></i>
+                            <span>
+                                <strong>Capacity: </strong>
+                                {% if class.is_full %}
+                                    <span class="badge-full">Full</span>
+                                {% else %}
+                                    <span class="badge-available">{{ class.available_slots|default:"5" }} Spots Available</span>
+                                    {% if forloop.counter == 3 %}
+                                    <div class="limited-spots">
+                                        <i class="fas fa-exclamation-circle"></i> 
+                                        Only 2 spots left!
+                                        <div class="spots-bar">
+                                            <div class="spots-progress" style="width: 80%;"></div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="class-footer">
+                        {% if class.is_booked %}
+                            {% for booking in user.booking_set.all %}
+                                {% if booking.fitness_class.id == class.id %}
+                                    <a href="{% url 'cancel_booking' booking.id %}" class="button button-danger">Cancel Booking</a>
+                                {% endif %}
+                            {% endfor %}
+                        {% elif not class.is_full %}
+                            <a href="{% url 'book_class' class.id %}" class="button">Book Now</a>
+                        {% else %}
+                            <button class="button button-disabled" disabled>Class Full</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-4">
+                    <i class="fas fa-info-circle me-2"></i> No classes available at the moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Load More Button -->
+        {% if has_more_classes %}
+        <div class="load-more-container">
+            <button id="load-more-btn" class="load-more-btn" data-offset="8">View More Classes</button>
+        </div>
+        {% endif %}
     </div>
     
     <!-- Testimonial Section -->
@@ -637,18 +784,144 @@
         }
         
         // Add hover effect on class cards
-        const classCards = document.querySelectorAll('.class-card');
-        classCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px)';
-                this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+        function addHoverEffect() {
+            const classCards = document.querySelectorAll('.class-card');
+            classCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px)';
+                    this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
             });
+        }
+        
+        // Initialize hover effect
+        addHoverEffect();
+        
+        // Load More functionality
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                const offset = parseInt(this.getAttribute('data-offset'));
+                
+                // Show loading animation
+                this.innerHTML = 'Loading <span class="loading"></span>';
+                this.disabled = true;
+                
+                // Make AJAX request to load more classes
+                fetch(`/load-more-classes/?offset=${offset}&limit=6`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Add new classes to the container
+                        const container = document.getElementById('classes-container');
+                        
+                        data.classes.forEach(classData => {
+                            // Create class card HTML
+                            const classCard = createClassCard(classData);
+                            container.innerHTML += classCard;
+                        });
+                        
+                        // Update button state
+                        if (data.has_more) {
+                            loadMoreBtn.innerHTML = 'View More Classes';
+                            loadMoreBtn.disabled = false;
+                            loadMoreBtn.setAttribute('data-offset', data.next_offset);
+                        } else {
+                            // Hide button if no more classes
+                            loadMoreBtn.parentElement.style.display = 'none';
+                        }
+                        
+                        // Re-apply filters and event listeners to new cards
+                        applyFilters();
+                        addHoverEffect();
+                    })
+                    .catch(error => {
+                        console.error('Error loading more classes:', error);
+                        loadMoreBtn.innerHTML = 'Error Loading Classes';
+                        setTimeout(() => {
+                            loadMoreBtn.innerHTML = 'Try Again';
+                            loadMoreBtn.innerHTML = 'Try Again';
+                            loadMoreBtn.disabled = false;
+                        }, 2000);
+                    });
+            });
+        }
+        
+        function createClassCard(classData) {
+            // Create HTML for difficulty dots
+            let difficultyDots = `
+                <div class="difficulty-indicator">
+                    <small>Difficulty:</small>
+                    <div class="difficulty-dots">
+                        <div class="dot active"></div>
+                        <div class="dot ${classData.name === 'HIIT Workout' || classData.name === 'Strength Training' ? 'active' : ''}"></div>
+                        <div class="dot ${classData.name === 'HIIT Workout' ? 'active' : ''}"></div>
+                    </div>
+                </div>
+            `;
             
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = '';
-                this.style.boxShadow = '';
-            });
-        });
+            // Create HTML for capacity/spots
+            let capacityHtml = '';
+            if (classData.is_full) {
+                capacityHtml = '<span class="badge-full">Full</span>';
+            } else {
+                capacityHtml = `<span class="badge-available">${classData.available_slots || '5'} Spots Available</span>`;
+            }
+            
+            // Create HTML for booking button
+            let bookingButton = '';
+            if (classData.is_booked) {
+                // This will need to be adjusted based on how you're tracking bookings
+                bookingButton = `<a href="/cancel-booking/${classData.booking_id}/" class="button button-danger">Cancel Booking</a>`;
+            } else if (!classData.is_full) {
+                bookingButton = `<a href="/book-class/${classData.id}/" class="button">Book Now</a>`;
+            } else {
+                bookingButton = `<button class="button button-disabled" disabled>Class Full</button>`;
+            }
+            
+            // Create the full card HTML
+            return `
+                <div class="col class-item">
+                    <div class="class-card" data-category="${classData.category || 'yoga'}" data-time="${classData.time_of_day || 'morning'}">
+                        <div class="class-header">
+                            ${classData.name}
+                        </div>
+                        <div class="class-body">
+                            <p class="class-description">${classData.description}</p>
+                            
+                            ${difficultyDots}
+                            
+                            <div class="class-meta">
+                                <i class="fas fa-calendar"></i>
+                                <span>${classData.date}</span>
+                            </div>
+                            <div class="class-meta">
+                                <i class="fas fa-clock"></i>
+                                <span>${classData.start_time} - ${classData.end_time}</span>
+                            </div>
+                            <div class="class-meta">
+                                <i class="fas fa-user"></i>
+                                <span>${classData.instructor}</span>
+                            </div>
+                            <div class="class-meta">
+                                <i class="fas fa-users"></i>
+                                <span>
+                                    <strong>Capacity: </strong>
+                                    ${capacityHtml}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="class-footer">
+                            ${bookingButton}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
         
         // Floating Booking Assistant
         const bookingAssistant = document.getElementById('booking-assistant');
@@ -688,12 +961,14 @@
             isExpanded = false;
         }
         
-        // Add special effects
+        // Add animation effects
         setTimeout(function() {
             const promoButton = document.querySelector('.promo-btn');
-            promoButton.classList.add('animate__animated', 'animate__pulse');
-            promoButton.style.animationIterationCount = 'infinite';
-            promoButton.style.animationDuration = '2s';
+            if (promoButton) {
+                promoButton.classList.add('animate__animated', 'animate__pulse');
+                promoButton.style.animationIterationCount = 'infinite';
+                promoButton.style.animationDuration = '2s';
+            }
         }, 2000);
     });
 </script>
