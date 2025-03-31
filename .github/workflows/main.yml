@@ -43,7 +43,8 @@ jobs:
       - name: Create and activate virtual environment
         run: |
           python -m venv venv
-          source venv/bin/activate
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/venv" >> $GITHUB_ENV
+          echo "$GITHUB_WORKSPACE/venv/bin" >> $GITHUB_PATH
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -51,11 +52,10 @@ jobs:
           pip install coverage pytest pytest-django pytest-cov
       - name: Verify coverage installation
         run: |
-          source venv/bin/activate
+          which python
           python -c "import coverage; print(coverage.__version__)"
       - name: Run tests with coverage
         run: |
-          source venv/bin/activate
           python -m coverage run run_django_tests.py
           python -m coverage report
           python -m coverage xml
