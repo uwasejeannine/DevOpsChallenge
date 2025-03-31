@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "booking.apps.BookingConfig",  # Keep this one!
+    "booking.apps.BookingConfig",  
     "crispy_forms",
     "crispy_bootstrap5",
 ]
@@ -44,7 +44,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "booking.middleware.UserProfileMiddleware",  # Replace 'booking' with your app name
+    "booking.middleware.UserProfileMiddleware",  
 ]
 
 ROOT_URLCONF = "fitness_booking.urls"
