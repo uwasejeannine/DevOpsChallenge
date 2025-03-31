@@ -1,0 +1,27 @@
+[Unit]
+Description=Gunicorn daemon for {{ app_name }}
+After=network.target postgresql.service
+
+[Service]
+User={{ ansible_user }}
+Group=www-data
+WorkingDirectory={{ app_dir }}
+EnvironmentFile={{ app_dir }}/.env
+ExecStart={{ venv_dir }}/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/{{ app_name }}.sock \
+          fitness_booking.wsgi:application
+
+# Recommended security measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+# Restart settings
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

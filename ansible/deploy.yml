@@ -1,97 +1,218 @@
 ---
+# Enhanced deployment playbook for Fitness Booking application
 - name: Deploy Fitness Booking Application
-  hosts: webservers
+  hosts: all
   become: yes
   vars:
-    docker_hub_username: "{{ lookup('env', 'DOCKER_HUB_USERNAME') }}"
-    app_dir: /home/{{ ansible_user }}/fitness-booking
-    env_file: "{{ app_dir }}/.env"
-    nginx_port: 8080  # Change this to your assigned port
-    mailhog_port: 8025  # Change this to your assigned port
+    app_name: fitness_booking
+    app_dir: "/opt/{{ app_name }}"
+    venv_dir: "{{ app_dir }}/venv"
+    git_repo: "https://github.com/yourusername/fitness_booking.git"  # Replace with your actual repository URL
+    branch: main
+    django_settings_module: "fitness_booking.settings"
+    domain_name: "fitness.example.com"  # Replace with your actual domain
+    docker_registry: "localhost:5000"  # Use your actual registry if applicable
+    docker_image: "{{ docker_registry }}/fitness_booking"
+    docker_tag: "{{ lookup('env', 'BUILD_NUMBER') | default('latest', true) }}"
 
   tasks:
-    - name: Install required packages
+    # Server Configuration
+    - name: Update apt cache
       apt:
-        name: 
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required system packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - postgresql
+          - postgresql-contrib
+          - nginx
+          - git
           - docker.io
           - docker-compose
-          - python3-pip
         state: present
-        update_cache: yes
-      become: yes
 
-    - name: Ensure Docker service is running
-      systemd:
-        name: docker
+    # Database Configuration
+    - name: Ensure PostgreSQL service is running
+      service:
+        name: postgresql
         state: started
         enabled: yes
-      become: yes
 
+    - name: Create PostgreSQL database
+      become: yes
+      become_user: postgres
+      postgresql_db:
+        name: "{{ app_name }}"
+        state: present
+
+    - name: Create PostgreSQL user
+      become: yes
+      become_user: postgres
+      postgresql_user:
+        db: "{{ app_name }}"
+        name: "{{ app_name }}_user"
+        password: "{{ lookup('env', 'DB_PASSWORD') }}"
+        priv: "ALL"
+        state: present
+
+    # Application Directory Setup
     - name: Create application directory
       file:
         path: "{{ app_dir }}"
         state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: '0755'
 
-    - name: Copy docker-compose.yml
+    # Choose deployment method (Docker or Git-based)
+    - name: Check if using Docker
+      stat:
+        path: "{{ app_dir }}/docker-compose.yml"
+      register: docker_compose_file
+
+    # Docker Deployment Method
+    - name: Pull Docker Images
+      docker_image:
+        name: "{{ docker_image }}:{{ docker_tag }}"
+        source: pull
+        force_source: yes
+      when: docker_compose_file.stat.exists
+
+    - name: Create .env file for Docker
       template:
-        src: templates/docker-compose.yml.j2
+        src: env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+      when: docker_compose_file.stat.exists
+      
+    - name: Create docker-compose.yml
+      template:
+        src: docker-compose.yml.j2
         dest: "{{ app_dir }}/docker-compose.yml"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: '0644'
+      when: docker_compose_file.stat.exists
 
-    - name: Create .env file
-      template:
-        src: templates/env.j2
-        dest: "{{ env_file }}"
-        mode: '0644'
-
-    - name: Pull Docker images
-      community.docker.docker_compose:
-        project_src: "{{ app_dir }}"
-        pull: yes
-      register: output
-      become: yes
-
-    - name: Start Docker containers
-      community.docker.docker_compose:
+    - name: Start application with Docker Compose
+      docker_compose:
         project_src: "{{ app_dir }}"
         state: present
-      register: output
+      when: docker_compose_file.stat.exists
+
+    # Git-based Deployment Method
+    - name: Clone or update Git repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ app_dir }}"
+        version: "{{ branch }}"
+        update: yes
+      when: not docker_compose_file.stat.exists
       become: yes
+      become_user: "{{ ansible_user }}"
+
+    - name: Create Python virtual environment
+      command: python3 -m venv {{ venv_dir }}
+      args:
+        creates: "{{ venv_dir }}/bin/activate"
+      when: not docker_compose_file.stat.exists
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        virtualenv: "{{ venv_dir }}"
+      when: not docker_compose_file.stat.exists
+
+    - name: Create .env file for Django
+      template:
+        src: env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+      when: not docker_compose_file.stat.exists
 
     - name: Run Django migrations
-      community.docker.docker_compose:
-        project_src: "{{ app_dir }}"
-        services: web
-        command: python manage.py migrate
-      become: yes
+      command: "{{ venv_dir }}/bin/python manage.py migrate"
+      args:
+        chdir: "{{ app_dir }}"
+      environment:
+        DJANGO_SETTINGS_MODULE: "{{ django_settings_module }}"
+      when: not docker_compose_file.stat.exists
 
     - name: Collect static files
-      community.docker.docker_compose:
-        project_src: "{{ app_dir }}"
-        services: web
-        command: python manage.py collectstatic --no-input
-      become: yes
+      command: "{{ venv_dir }}/bin/python manage.py collectstatic --noinput"
+      args:
+        chdir: "{{ app_dir }}"
+      environment:
+        DJANGO_SETTINGS_MODULE: "{{ django_settings_module }}"
+      when: not docker_compose_file.stat.exists
 
-    - name: Create superuser (if doesn't exist)
-      community.docker.docker_compose:
-        project_src: "{{ app_dir }}"
-        services: web
-        command: >
-          python -c "
-          import os
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fitness_booking.settings')
-          import django
-          django.setup()
-          from django.contrib.auth.models import User
-          if not User.objects.filter(username='admin').exists():
-              User.objects.create_superuser('admin', 'admin@example.com', 'adminpassword')
-              print('Superuser created successfully')
-          else:
-              print('Superuser already exists')
-          "
-      become: yes
+    # Gunicorn Service for Git-based deployment
+    - name: Create Gunicorn service
+      template:
+        src: gunicorn.service.j2
+        dest: /etc/systemd/system/{{ app_name }}.service
+      when: not docker_compose_file.stat.exists
+      notify: Restart Gunicorn
 
-    - name: Display application URL
-      debug:
-        msg: "Application deployed successfully! Access it at http://{{ ansible_host }}:{{ nginx_port }}"
+    - name: Enable and start Gunicorn service
+      systemd:
+        name: "{{ app_name }}"
+        state: started
+        enabled: yes
+        daemon_reload: yes
+      when: not docker_compose_file.stat.exists
+
+    # Nginx Configuration (for both deployment methods)
+    - name: Create Nginx site configuration
+      template:
+        src: nginx_site.j2
+        dest: /etc/nginx/sites-available/{{ app_name }}
+      notify: Restart Nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/{{ app_name }}
+        dest: /etc/nginx/sites-enabled/{{ app_name }}
+        state: link
+      notify: Restart Nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+      ignore_errors: yes
+
+    # Security Configuration 
+    - name: Set up UFW firewall
+      ufw:
+        rule: allow
+        name: "{{ item }}"
+      loop:
+        - OpenSSH
+        - "Nginx Full"
+      
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: Restart Gunicorn
+      systemd:
+        name: "{{ app_name }}"
+        state: restarted
