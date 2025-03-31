@@ -1,9 +1,15 @@
-from datetime import date, time
+from datetime import date, time, timezone
+from django.utils import timezone as django_timezone
 from unittest.mock import patch
+import os
 
 from django.contrib.auth.models import User
 from django.test import Client, RequestFactory, TestCase
 from django.urls import NoReverseMatch, reverse
+from django.apps import apps
+from django.contrib.admin.sites import AdminSite
+from django.test.utils import override_settings
+from django.db.utils import IntegrityError
 
 from .forms import BookingForm, UserProfileForm, UserRegisterForm
 from .management.commands.create_user_profiles import (
@@ -12,6 +18,8 @@ from .management.commands.create_user_profiles import (
 from .middleware import UserProfileMiddleware
 from .models import Booking, FitnessClass, UserProfile
 from .signals import create_user_profile, save_user_profile
+from .admin import BookingAdmin, FitnessClassAdmin, UserProfileAdmin
+from .apps import BookingConfig
 
 
 class FitnessClassModelTest(TestCase):
@@ -524,54 +532,372 @@ class MiddlewareTest(TestCase):
 
 
 class SignalsTest(TestCase):
-    def test_create_user_profile_signal(self):
-        # Create a user and verify that a profile is automatically created
-        user = User.objects.create_user(
-            username="signaluser",
-            email="signal@example.com",
-            password="testpassword",
-        )
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        # Get the profile instead of creating it
+        self.user_profile = UserProfile.objects.get(user=self.user)
+        self.user_profile.phone = '1234567890'
+        self.user_profile.bio = 'Test Bio'
+        self.user_profile.preferred_categories = 'yoga,pilates'
+        self.user_profile.save()
 
-        # Check that a profile was created
-        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+    def test_create_user_profile_signal_with_existing_profile(self):
+        """Test that creating a user profile signal works with existing profile"""
+        # Test that the signal doesn't create a duplicate profile
+        create_user_profile(User, self.user, created=True)
+        self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
+        
+        # Test with created=False
+        create_user_profile(User, self.user, created=False)
+        self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
 
-    def test_save_user_profile_signal(self):
-        # Create a user
-        user = User.objects.create_user(
-            username="profilesaveuser",
-            email="profilesave@example.com",
-            password="testpassword",
-        )
+    def test_create_user_profile_signal_with_new_user(self):
+        """Test that creating a user profile signal works with new user"""
+        new_user = User.objects.create_user(username='newuser', password='testpass')
+        create_user_profile(User, new_user, created=True)
+        self.assertTrue(UserProfile.objects.filter(user=new_user).exists())
+        
+        # Test with created=False
+        another_user = User.objects.create_user(username='anotheruser', password='testpass')
+        create_user_profile(User, another_user, created=False)
+        self.assertTrue(UserProfile.objects.filter(user=another_user).exists())
 
-        # Update user and check that profile is saved
-        user.first_name = "Test"
-        user.last_name = "User"
-        user.save()
+    def test_save_user_profile_signal_with_changes(self):
+        """Test that saving a user profile signal works with changes"""
+        # Test with User instance
+        self.user.first_name = 'New Name'
+        self.user.save()
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.user.first_name, 'New Name')
 
-        # Refresh profile from database
-        profile = UserProfile.objects.get(user=user)
-        self.assertIsNotNone(profile)  # Profile still exists after user save
+        # Test with UserProfile instance
+        self.user_profile.phone = '9876543210'
+        self.user_profile.save()
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.phone, '9876543210')
+        
+        # Test with raw=True
+        save_user_profile(User, self.user, raw=True)
+        self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
+
+    def test_save_user_profile_signal_with_no_profile(self):
+        """Test that saving a user profile signal creates profile if it doesn't exist"""
+        new_user = User.objects.create_user(username='newuser2', password='testpass')
+        save_user_profile(User, new_user)
+        self.assertTrue(UserProfile.objects.filter(user=new_user).exists())
+        
+        # Test with raw=True
+        another_user = User.objects.create_user(username='anotheruser2', password='testpass')
+        save_user_profile(User, another_user, raw=True)
+        self.assertTrue(UserProfile.objects.filter(user=another_user).exists())
+
+    def test_save_user_profile_signal_with_existing_profile(self):
+        """Test that saving a user profile signal works with existing profile"""
+        # Test that the signal doesn't create a duplicate profile
+        save_user_profile(User, self.user)
+        self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
+        
+        # Test with raw=True
+        save_user_profile(User, self.user, raw=True)
+        self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
 
 
 class CommandTest(TestCase):
-    @patch("booking.management.commands.create_user_profiles.Command.handle")
-    def test_create_user_profiles_command(self, mock_handle):
-        # Create a user without a profile
+    def setUp(self):
+        # Create users without profiles
+        self.user1 = User.objects.create_user(
+            username="commanduser1",
+            email="command1@example.com",
+            password="testpassword"
+        )
+        self.user2 = User.objects.create_user(
+            username="commanduser2",
+            email="command2@example.com",
+            password="testpassword"
+        )
+        # Delete profiles created by signals
+        UserProfile.objects.all().delete()
+
+    def test_create_user_profiles_command(self):
+        """Test the create_user_profiles command"""
+        # Create command instance
+        cmd = CreateUserProfilesCommand()
+        
+        # Execute command
+        cmd.handle()
+        
+        # Verify profiles were created
+        self.assertEqual(UserProfile.objects.count(), 2)
+        self.assertTrue(UserProfile.objects.filter(user=self.user1).exists())
+        self.assertTrue(UserProfile.objects.filter(user=self.user2).exists())
+        
+        # Verify profile fields
+        profile1 = UserProfile.objects.get(user=self.user1)
+        self.assertEqual(profile1.phone, '')
+        self.assertEqual(profile1.bio, '')
+        self.assertEqual(profile1.preferred_categories, '')
+        
+        profile2 = UserProfile.objects.get(user=self.user2)
+        self.assertEqual(profile2.phone, '')
+        self.assertEqual(profile2.bio, '')
+        self.assertEqual(profile2.preferred_categories, '')
+        
+        # Test command with no users
+        User.objects.all().delete()
+        cmd.handle()
+        self.assertEqual(UserProfile.objects.count(), 0)
+        
+        # Test command with existing profiles
         user = User.objects.create_user(
-            username="commanduser",
-            email="command@example.com",
-            password="testpassword",
+            username="existinguser",
+            email="existing@example.com",
+            password="testpassword"
+        )
+        UserProfile.objects.create(user=user)
+        cmd.handle()
+        self.assertEqual(UserProfile.objects.count(), 1)
+
+
+class AdminTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_superuser(username='admin', password='admin123', email='admin@example.com')
+        self.client.login(username='admin', password='admin123')
+        self.fitness_class = FitnessClass.objects.create(
+            name='Test Class',
+            description='Test Description',
+            instructor='Test Instructor',
+            date=django_timezone.now().date(),
+            start_time='10:00',
+            end_time='11:00',
+            capacity=10,
+            category='yoga'
+        )
+        self.user_profile = UserProfile.objects.get(user=self.user)
+        self.user_profile.phone = '1234567890'
+        self.user_profile.bio = 'Test Bio'
+        self.user_profile.preferred_categories = 'yoga,pilates'
+        self.user_profile.save()
+        self.booking = Booking.objects.create(
+            user=self.user,
+            fitness_class=self.fitness_class
         )
 
-        # Delete the profile that was automatically created
-        UserProfile.objects.filter(user=user).delete()
+    def test_admin_views(self):
+        """Test that all admin views are accessible"""
+        # Test FitnessClass admin
+        admin = FitnessClassAdmin(FitnessClass, AdminSite())
+        self.assertEqual(admin.list_display, ['name', 'instructor', 'date', 'start_time', 'end_time', 'capacity', 'category'])
+        self.assertEqual(admin.search_fields, ['name', 'instructor', 'category'])
+        self.assertEqual(admin.list_filter, ['date', 'category'])
 
-        # Mock the command's handle method
-        mock_handle.return_value = None
+        # Test UserProfile admin
+        admin = UserProfileAdmin(UserProfile, AdminSite())
+        self.assertEqual(admin.list_display, ['user', 'phone'])
+        self.assertEqual(admin.search_fields, ['user__username', 'phone'])
 
-        # Call the command
+        # Test Booking admin
+        admin = BookingAdmin(Booking, AdminSite())
+        self.assertEqual(admin.list_display, ['user', 'fitness_class', 'created_at'])
+        self.assertEqual(admin.search_fields, ['user__username', 'fitness_class__name'])
+        self.assertEqual(admin.list_filter, ['created_at'])
+
+    def test_fitness_class_admin(self):
+        """Test FitnessClass admin functionality"""
+        # Test list view
+        response = self.client.get(reverse('admin:booking_fitnessclass_changelist'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Test Class')
+
+        # Test add view
+        response = self.client.get(reverse('admin:booking_fitnessclass_add'))
+        self.assertEqual(response.status_code, 200)
+
+        # Test change view
+        response = self.client.get(reverse('admin:booking_fitnessclass_change', args=[self.fitness_class.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_booking_admin(self):
+        """Test Booking admin functionality"""
+        # Test list view
+        response = self.client.get(reverse('admin:booking_booking_changelist'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'admin')
+
+        # Test add view
+        response = self.client.get(reverse('admin:booking_booking_add'))
+        self.assertEqual(response.status_code, 200)
+
+        # Test change view
+        response = self.client.get(reverse('admin:booking_booking_change', args=[self.booking.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_profile_admin(self):
+        """Test UserProfile admin functionality"""
+        # Test list view
+        response = self.client.get(reverse('admin:booking_userprofile_changelist'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'admin')
+
+        # Test add view
+        response = self.client.get(reverse('admin:booking_userprofile_add'))
+        self.assertEqual(response.status_code, 200)
+
+        # Test change view
+        response = self.client.get(reverse('admin:booking_userprofile_change', args=[self.user_profile.id]))
+        self.assertEqual(response.status_code, 200)
+
+
+class AppConfigTest(TestCase):
+    def test_app_config(self):
+        """Test the app configuration"""
+        # Test app config name
+        self.assertEqual(BookingConfig.name, 'booking')
+        
+        # Test app config verbose name
+        app_config = apps.get_app_config('booking')
+        self.assertEqual(app_config.verbose_name, 'Booking')
+        
+        # Test app config default auto field
+        self.assertEqual(BookingConfig.default_auto_field, 'django.db.models.BigAutoField')
+        
+        # Test app config ready method
+        app_config = BookingConfig('booking', apps)
+        app_config.ready()
+        
+        # Test app config path
+        self.assertEqual(app_config.path, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+class CreateUserProfilesCommandTest(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            username="testuser1",
+            email="test1@example.com",
+            password="testpass1"
+        )
+        self.user2 = User.objects.create_user(
+            username="testuser2",
+            email="test2@example.com",
+            password="testpass2"
+        )
+        # Delete profiles created by signals
+        UserProfile.objects.all().delete()
+
+    def test_command_execution(self):
         cmd = CreateUserProfilesCommand()
+        
+        # Execute command
         cmd.handle()
+        
+        # Verify profiles were created
+        self.assertEqual(UserProfile.objects.count(), 2)
+        self.assertTrue(UserProfile.objects.filter(user=self.user1).exists())
+        self.assertTrue(UserProfile.objects.filter(user=self.user2).exists())
 
-        # Verify that the command's handle method was called
-        mock_handle.assert_called_once()
+
+class ModelMethodsTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.fitness_class = FitnessClass.objects.create(
+            name='Test Class',
+            description='Test Description',
+            instructor='Test Instructor',
+            date=django_timezone.now().date(),
+            start_time='10:00',
+            end_time='11:00',
+            capacity=10,
+            category='yoga'
+        )
+        self.user_profile = UserProfile.objects.get(user=self.user)
+        self.user_profile.phone = '1234567890'
+        self.user_profile.bio = 'Test Bio'
+        self.user_profile.preferred_categories = 'yoga,pilates'
+        self.user_profile.save()
+        self.booking = Booking.objects.create(
+            user=self.user,
+            fitness_class=self.fitness_class
+        )
+
+    def test_fitness_class_methods(self):
+        """Test FitnessClass model methods and properties"""
+        # Test string representation
+        self.assertEqual(str(self.fitness_class), f"{self.fitness_class.name} - {self.fitness_class.date} {self.fitness_class.start_time}")
+        
+        # Test available_spots property
+        self.assertEqual(self.fitness_class.available_spots, 9)  # 10 capacity - 1 booking
+        
+        # Test is_full property
+        self.assertFalse(self.fitness_class.is_full)
+        
+        # Fill up the class
+        for i in range(9):  # Create 9 more bookings
+            user = User.objects.create_user(
+                username=f'filler{i}',
+                password='testpass'
+            )
+            Booking.objects.create(
+                user=user,
+                fitness_class=self.fitness_class
+            )
+        
+        # Refresh from db to get updated state
+        self.fitness_class.refresh_from_db()
+        
+        # Test is_full property when class is full
+        self.assertTrue(self.fitness_class.is_full)
+        self.assertEqual(self.fitness_class.available_spots, 0)
+        
+        # Test with zero capacity
+        self.fitness_class.capacity = 0
+        self.fitness_class.save()
+        self.assertEqual(self.fitness_class.available_spots, 0)
+        self.assertTrue(self.fitness_class.is_full)
+
+    def test_user_profile_methods(self):
+        """Test UserProfile model methods"""
+        # Test string representation
+        self.assertEqual(str(self.user_profile), self.user.username)
+        
+        # Test get_preferred_categories method
+        categories = self.user_profile.get_preferred_categories()
+        self.assertEqual(categories, ['yoga', 'pilates'])
+        
+        # Test with empty categories
+        self.user_profile.preferred_categories = ''
+        self.user_profile.save()
+        categories = self.user_profile.get_preferred_categories()
+        self.assertEqual(categories, [])
+        
+        # Test with whitespace in categories
+        self.user_profile.preferred_categories = 'yoga, pilates,  '
+        self.user_profile.save()
+        categories = self.user_profile.get_preferred_categories()
+        self.assertEqual(categories, ['yoga', 'pilates'])
+        
+        # Test unique constraint
+        with self.assertRaises(IntegrityError):
+            UserProfile.objects.create(user=self.user)
+
+    def test_booking_methods(self):
+        """Test Booking model methods"""
+        # Test string representation
+        expected = f"{self.user.username} - {self.fitness_class.name}"
+        self.assertEqual(str(self.booking), expected)
+        
+        # Test unique constraint
+        with self.assertRaises(IntegrityError):
+            Booking.objects.create(
+                user=self.user,
+                fitness_class=self.fitness_class
+            )
+        
+        # Test created_at auto_now_add
+        self.assertIsNotNone(self.booking.created_at)
+        
+        # Test with different user and same class
+        other_user = User.objects.create_user(username='otheruser', password='testpass')
+        Booking.objects.create(
+            user=other_user,
+            fitness_class=self.fitness_class
+        )
+        self.assertEqual(Booking.objects.count(), 2)

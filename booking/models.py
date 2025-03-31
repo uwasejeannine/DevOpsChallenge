@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class FitnessClass(models.Model):
@@ -18,10 +20,8 @@ class FitnessClass(models.Model):
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-    capacity = models.PositiveIntegerField()
-    category = models.CharField(
-        max_length=20, choices=CATEGORY_CHOICES, default="other"
-    )
+    capacity = models.IntegerField()
+    category = models.CharField(max_length=50, default='general')
 
     # Your existing methods remain the same
 
@@ -29,17 +29,27 @@ class FitnessClass(models.Model):
         return f"{self.name} - {self.date} {self.start_time}"
 
     @property
+    def available_spots(self):
+        booked_spots = self.booking_set.count()
+        return self.capacity - booked_spots
+
+    @property
     def is_full(self):
-        return self.booking_set.count() >= self.capacity
+        return self.available_spots <= 0
 
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="userprofile"
     )
-    phone = models.CharField(max_length=15, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
     bio = models.TextField(blank=True)  # Optional bio
-    preferred_categories = models.CharField(max_length=100, blank=True)
+    preferred_categories = models.CharField(max_length=200, blank=True)
+
+    def get_preferred_categories(self):
+        if not self.preferred_categories:
+            return []
+        return [cat.strip() for cat in self.preferred_categories.split(',')]
 
     def __str__(self):
         return self.user.username
@@ -54,7 +64,7 @@ class UserProfile(models.Model):
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     fitness_class = models.ForeignKey(FitnessClass, on_delete=models.CASCADE)
-    booking_date = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "fitness_class")
