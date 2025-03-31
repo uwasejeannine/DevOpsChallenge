@@ -1,86 +1,165 @@
 # Fitness Class Booking System
 
-A Django application for booking fitness classes, deployed using DevOps practices including Docker containerization, CI/CD with GitHub Actions, and automated deployment with Ansible.
+A Django-based fitness class booking system with Docker containerization, CI/CD pipeline, and automated deployment.
 
 ## Features
 
 - User authentication (registration/login)
-- Fitness class browsing and booking
-- User profiles
-- Email notifications for bookings and cancellations
-- Admin interface for managing classes and bookings
-
-## Tech Stack
-
-- Django with PostgreSQL database
-- Docker and Docker Compose for containerization
-- Nginx as a reverse proxy
-- MailHog for email testing
-- GitHub Actions for CI/CD
-- Ansible for deployment automation
-
-## Local Development
-
-### Prerequisites
-
-- Docker and Docker Compose
-- Python 3.10+
-- pip
-
-### Setup
-
-1. Clone the repository: git clone https://github.com/your-username/fitness-booking-devops.git
-cd fitness-booking-devops
-2. Create .env file from the example:
-3. Build and run the Docker containers:
-4. Access the application at http://localhost:8080
-
-### Running Tests
-## Deployment
-
-### Prerequisites
-
-- Ansible 2.9+
-- Docker Hub account
-
-### Steps
-
-1. Set your Docker Hub username as an environment variable:
-export DOCKER_HUB_USERNAME=your-dockerhub-username
-2. Update the inventory file with your server details:vim ansible/inventory.ini
-3. Run the Ansible playbook:
-ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
-4. Access the deployed application at http://server-ip:port
-
-## CI/CD Pipeline
-
-The project uses GitHub Actions for CI/CD:
-
-1. Code linting with flake8
-2. Running tests against PostgreSQL
-3. Building and pushing Docker images to Docker Hub
-4. Automated deployment using Ansible (manual trigger)
+- Database persistence with PostgreSQL
+- Email notifications for bookings and reminders
+- Docker containerization
+- CI/CD pipeline with GitHub Actions
+- Automated deployment with Ansible
 
 ## Project Structure
 
-- `booking/` - Django app for fitness class bookings
-- `fitness_booking/` - Django project settings
-- `docker/` - Dockerfiles for each service
-- `.github/workflows/` - GitHub Actions workflows
-- `ansible/` - Ansible playbooks and templates for deployment
+```
+fitness_booking/
+├── docker/
+│   ├── django/
+│   │   └── Dockerfile
+│   ├── nginx/
+│   │   ├── Dockerfile
+│   │   └── nginx.conf
+│   └── postgres/
+│       └── Dockerfile
+├── ansible/
+│   ├── deploy.yml
+│   ├── env.j2
+│   └── docker-compose.yml.j2
+├── .github/
+│   └── workflows/
+│       └── main.yml
+├── fitness_booking/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── manage.py
+├── requirements.txt
+├── docker-compose.yml
+└── .env
+```
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Python 3.11+
+- PostgreSQL 13+
+- Nginx
+- Ansible (for deployment)
+- Docker Hub account (for CI/CD)
+
+## Local Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/GanzAfrica/fitness_booking.git
+   cd fitness_booking
+   ```
+
+2. Create and configure `.env` file:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. Build and run with Docker Compose:
+   ```bash
+   docker-compose build
+   docker-compose up
+   ```
+
+4. Access the application:
+   - Main application: http://localhost:80
+   - Django admin: http://localhost:80/admin
+   - API endpoints: http://localhost:80/api/
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+1. Code Quality Check:
+   - Flake8 for linting
+   - Black for code formatting
+   - isort for import sorting
+
+2. Testing:
+   - Django test suite
+   - Integration tests
+
+3. Docker Build and Push:
+   - Build Docker images
+   - Push to Docker Hub
+
+### GitHub Actions Setup
+
+1. Add Docker Hub credentials to GitHub Secrets:
+   - `DOCKERHUB_USERNAME`: Your Docker Hub username
+   - `DOCKERHUB_TOKEN`: Your Docker Hub access token
+
+2. The workflow will automatically:
+   - Run code quality checks
+   - Run tests
+   - Build and push Docker images to Docker Hub
+   - Trigger deployment (on main branch)
+
+## Deployment
+
+The application can be deployed using Ansible:
+
+1. Configure your inventory file:
+   ```bash
+   cp ansible/inventory.ini.example ansible/inventory.ini
+   # Edit inventory.ini with your server details
+   ```
+
+2. Set up environment variables:
+   ```bash
+   export DB_PASSWORD=your_database_password
+   export DJANGO_SECRET_KEY=your_secret_key
+   ```
+
+3. Run the deployment:
+   ```bash
+   ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+   ```
+
+### Server Configuration
+
+The application is configured to run on:
+- Server IP: 64.23.210.235
+- Nginx Port: 8080 (assigned port)
+- Django Port: 8000 (internal)
+- PostgreSQL Port: 5432 (internal)
+
+Access the deployed application at:
+- Main application: http://64.23.210.235:8080
+- Django admin: http://64.23.210.235:8080/admin
+- API endpoints: http://64.23.210.235:8080/api/
+
+## Environment Variables
+
+Required environment variables:
+- `DJANGO_SECRET_KEY`
+- `DJANGO_DEBUG`
+- `DATABASE_URL`
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+- `EMAIL_HOST_USER`
+- `EMAIL_HOST_PASSWORD`
+- `EMAIL_USE_TLS`
+- `DB_PASSWORD` (for Ansible deployment)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
-Step 7: Deploy with Ansible
-Once you've pushed your code to GitHub and your GitHub Actions workflow has pushed images to Docker Hub, deploy using Ansible:
-
-# Set your Docker Hub username
-export DOCKER_HUB_USERNAME=your-dockerhub-username
-
-# Run the Ansible playbook
-ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
-
-# Check if the application is running on your server:
-http://64.23.210.235:8080
-- (Replace 8080 with your assigned port)
+This project is licensed under the MIT License - see the LICENSE file for details.
 

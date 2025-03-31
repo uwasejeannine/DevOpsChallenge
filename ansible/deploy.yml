@@ -7,13 +7,17 @@
     app_name: fitness_booking
     app_dir: "/opt/{{ app_name }}"
     venv_dir: "{{ app_dir }}/venv"
-    git_repo: "https://github.com/yourusername/fitness_booking.git"  # Replace with your actual repository URL
+    git_repo: "https://github.com/GanzAfrica/fitness_booking.git"
     branch: main
     django_settings_module: "fitness_booking.settings"
-    domain_name: "fitness.example.com"  # Replace with your actual domain
-    docker_registry: "localhost:5000"  # Use your actual registry if applicable
+    domain_name: "fitness.example.com"
+    docker_registry: "localhost:5000"
     docker_image: "{{ docker_registry }}/fitness_booking"
     docker_tag: "{{ lookup('env', 'BUILD_NUMBER') | default('latest', true) }}"
+    # Port configuration
+    nginx_port: 8080  # Your assigned port
+    django_port: 8000
+    postgres_port: 5432
 
   tasks:
     # Server Configuration
@@ -69,19 +73,12 @@
         group: "{{ ansible_user }}"
         mode: '0755'
 
-    # Choose deployment method (Docker or Git-based)
-    - name: Check if using Docker
-      stat:
-        path: "{{ app_dir }}/docker-compose.yml"
-      register: docker_compose_file
-
     # Docker Deployment Method
     - name: Pull Docker Images
       docker_image:
         name: "{{ docker_image }}:{{ docker_tag }}"
         source: pull
         force_source: yes
-      when: docker_compose_file.stat.exists
 
     - name: Create .env file for Docker
       template:
@@ -90,7 +87,6 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0600'
-      when: docker_compose_file.stat.exists
       
     - name: Create docker-compose.yml
       template:
@@ -99,13 +95,31 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0644'
-      when: docker_compose_file.stat.exists
 
-    - name: Start application with Docker Compose
+    - name: Start Docker containers
       docker_compose:
         project_src: "{{ app_dir }}"
         state: present
-      when: docker_compose_file.stat.exists
+        build: yes
+        remove_orphans: yes
+      register: docker_compose_result
+
+    - name: Wait for application to be ready
+      wait_for:
+        port: "{{ nginx_port }}"
+        timeout: 30
+      when: docker_compose_result.changed
+
+    - name: Check application health
+      uri:
+        url: "http://localhost:{{ nginx_port }}/health/"
+        method: GET
+        status_code: 200
+      register: health_check
+      until: health_check.status == 200
+      retries: 5
+      delay: 5
+      when: docker_compose_result.changed
 
     # Git-based Deployment Method
     - name: Clone or update Git repository
@@ -114,7 +128,7 @@
         dest: "{{ app_dir }}"
         version: "{{ branch }}"
         update: yes
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
       become: yes
       become_user: "{{ ansible_user }}"
 
@@ -122,13 +136,13 @@
       command: python3 -m venv {{ venv_dir }}
       args:
         creates: "{{ venv_dir }}/bin/activate"
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     - name: Install Python dependencies
       pip:
         requirements: "{{ app_dir }}/requirements.txt"
         virtualenv: "{{ venv_dir }}"
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     - name: Create .env file for Django
       template:
@@ -137,7 +151,7 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0600'
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     - name: Run Django migrations
       command: "{{ venv_dir }}/bin/python manage.py migrate"
@@ -145,7 +159,7 @@
         chdir: "{{ app_dir }}"
       environment:
         DJANGO_SETTINGS_MODULE: "{{ django_settings_module }}"
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     - name: Collect static files
       command: "{{ venv_dir }}/bin/python manage.py collectstatic --noinput"
@@ -153,14 +167,14 @@
         chdir: "{{ app_dir }}"
       environment:
         DJANGO_SETTINGS_MODULE: "{{ django_settings_module }}"
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     # Gunicorn Service for Git-based deployment
     - name: Create Gunicorn service
       template:
         src: gunicorn.service.j2
         dest: /etc/systemd/system/{{ app_name }}.service
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
       notify: Restart Gunicorn
 
     - name: Enable and start Gunicorn service
@@ -169,7 +183,7 @@
         state: started
         enabled: yes
         daemon_reload: yes
-      when: not docker_compose_file.stat.exists
+      when: not docker_compose_result.changed
 
     # Nginx Configuration (for both deployment methods)
     - name: Create Nginx site configuration

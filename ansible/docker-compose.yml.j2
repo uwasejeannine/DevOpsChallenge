@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB={{ app_name }}
+      - POSTGRES_USER={{ app_name }}_user
+      - POSTGRES_PASSWORD={{ lookup('env', 'DB_PASSWORD') }}
+    ports:
+      - "{{ postgres_port }}:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/django/Dockerfile
+    command: gunicorn --bind 0.0.0.0:{{ django_port }} fitness_booking.wsgi:application
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - "{{ django_port }}"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "{{ nginx_port }}:80"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume: 
