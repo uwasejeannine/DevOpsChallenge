@@ -144,9 +144,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = "jeannineuwasee@gmail.com"
-EMAIL_HOST_PASSWORD = (
-    "nfic tvma epsj lssm"  # App password
-)
+EMAIL_HOST_PASSWORD = "nfic tvma epsj lssm"  # App password
 DEFAULT_FROM_EMAIL = "jeannineuwasee@gmail.com"
 
 # Media files
@@ -157,4 +155,5 @@ os.makedirs(MEDIA_ROOT, exist_ok=True)  # Create media directory if it doesn't e
 # Disable the staticfiles warning during test execution
 import warnings
 from django.core.exceptions import ImproperlyConfigured
-warnings.filterwarnings('ignore', message='No directory at', category=UserWarning)
+
+warnings.filterwarnings("ignore", message="No directory at", category=UserWarning)
