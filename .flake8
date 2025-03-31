@@ -1,0 +1,11 @@
+[flake8]
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    venv,
+    */venv/*,
+    */site-packages/*
+max-line-length = 100
+select = E9,F63,F7,F82
