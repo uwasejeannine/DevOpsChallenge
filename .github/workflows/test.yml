@@ -1,0 +1,66 @@
+name: Django Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-django coverage python-dotenv
+
+    - name: Set up PostgreSQL
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '14'
+        postgresql db: fitness_booking
+        postgresql user: postgres
+        postgresql password: GanzAfrica6
+    
+    - name: Run Tests with Django Test Runner
+      env:
+        DJANGO_SETTINGS_MODULE: fitness_booking.settings
+        DB_HOST: localhost
+        DB_NAME: fitness_booking
+        DB_USER: postgres
+        DB_PASSWORD: GanzAfrica6
+        DB_PORT: 5432
+      run: |
+        python manage.py test booking
+    
+    - name: Run Tests with Pytest
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        DJANGO_SETTINGS_MODULE: fitness_booking.settings
+        DB_HOST: localhost
+        DB_NAME: fitness_booking
+        DB_USER: postgres
+        DB_PASSWORD: GanzAfrica6
+        DB_PORT: 5432
+      run: |
+        python -c "import os; print(os.environ.get('DJANGO_SETTINGS_MODULE'))"
+        python -m pytest booking/tests.py -v || true
+        python -m coverage run --source=booking -m pytest
+        python -m coverage report
+        python -m coverage xml
+    
+    - name: Upload Coverage Report
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
