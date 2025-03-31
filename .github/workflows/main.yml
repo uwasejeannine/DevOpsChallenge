@@ -45,11 +45,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install coverage pytest pytest-django pytest-cov
+      - name: Verify coverage installation
+        run: |
+          python -c "import coverage; print(coverage.__version__)"
       - name: Run tests with coverage
         run: |
-          coverage run run_django_tests.py
-          coverage report
-          coverage xml
+          python -m coverage run run_django_tests.py
+          python -m coverage report
+          python -m coverage xml
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
         with:
