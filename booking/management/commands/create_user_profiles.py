@@ -1,6 +1,7 @@
 # booking/management/commands/create_user_profiles.py
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
 from booking.models import UserProfile
 
 

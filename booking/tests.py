@@ -1,8 +1,10 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.urls import reverse
 from datetime import date, time
-from .models import FitnessClass, Booking, UserProfile
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+from django.urls import reverse
+
+from .models import Booking, FitnessClass, UserProfile
 
 
 class FitnessClassModelTest(TestCase):

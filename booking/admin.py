@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import FitnessClass, Booking, UserProfile
+
+from .models import Booking, FitnessClass, UserProfile
 
 
 @admin.register(FitnessClass)

@@ -1,19 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.mail import send_mail
+import logging
+from datetime import date, datetime, timedelta  # Add these imports
+
 from django.conf import settings
-from django.template.loader import render_to_string
-from django.contrib.auth import login, authenticate, logout
-from django.utils import timezone
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import JsonResponse
-from datetime import datetime, date, timedelta  # Add these imports
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.utils import timezone
 
-import logging
-
-from .models import FitnessClass, Booking, UserProfile
-from .forms import UserRegisterForm, BookingForm, UserProfileForm
+from .forms import BookingForm, UserProfileForm, UserRegisterForm
+from .models import Booking, FitnessClass, UserProfile
 
 # Set up logging
 logger = logging.getLogger(__name__)
