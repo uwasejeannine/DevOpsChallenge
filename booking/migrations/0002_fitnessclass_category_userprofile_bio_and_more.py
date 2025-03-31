@@ -6,23 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('booking', '0001_initial'),
+        ("booking", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='fitnessclass',
-            name='category',
-            field=models.CharField(choices=[('yoga', 'Yoga'), ('hiit', 'HIIT'), ('pilates', 'Pilates'), ('spinning', 'Spinning'), ('other', 'Other')], default='other', max_length=20),
+            model_name="fitnessclass",
+            name="category",
+            field=models.CharField(
+                choices=[
+                    ("yoga", "Yoga"),
+                    ("hiit", "HIIT"),
+                    ("pilates", "Pilates"),
+                    ("spinning", "Spinning"),
+                    ("other", "Other"),
+                ],
+                default="other",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='bio',
+            model_name="userprofile",
+            name="bio",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='preferred_categories',
+            model_name="userprofile",
+            name="preferred_categories",
             field=models.CharField(blank=True, max_length=100),
         ),
     ]

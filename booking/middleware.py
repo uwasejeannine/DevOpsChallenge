@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class UserProfileMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -18,9 +19,11 @@ class UserProfileMiddleware:
                 profile = request.user.userprofile
             except User.userprofile.RelatedObjectDoesNotExist:
                 # Create a profile if it doesn't exist
-                logger.info(f"Creating missing UserProfile for user {request.user.username}")
+                logger.info(
+                    f"Creating missing UserProfile for user {request.user.username}"
+                )
                 UserProfile.objects.create(user=request.user)
-        
+
         response = self.get_response(request)
         return response
 
@@ -36,6 +39,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         except User.userprofile.RelatedObjectDoesNotExist:
             # Only create if it doesn't exist
             UserProfile.objects.create(user=instance)
+
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
