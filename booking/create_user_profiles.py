@@ -22,3 +22,4 @@ class Command(BaseCommand):
             for user in users_without_profile:
                 self.stdout.write(f' - Created profile for {user.username}')
         else:
+            self.stdout.write(self.style.SUCCESS('All users already have profiles'))
