@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-developmen
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
+ 
 # Application definition
 
 INSTALLED_APPS = [
@@ -140,3 +140,8 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'jeannineuwasee@gmail.com' 
 EMAIL_HOST_PASSWORD = 'nfic tvma epsj lssm'  # App password (I've removed the ** around it)
 DEFAULT_FROM_EMAIL = 'jeannineuwasee@gmail.com'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
