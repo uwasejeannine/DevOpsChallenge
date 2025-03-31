@@ -1,14 +1,12 @@
-from datetime import date, datetime, time, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import date, time
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, RequestFactory, TestCase
 from django.urls import NoReverseMatch, reverse
-from django.utils import timezone
 
 from .forms import BookingForm, UserProfileForm, UserRegisterForm
-from .management.commands.create_user_profiles import \
-    Command as CreateUserProfilesCommand
+from .management.commands.create_user_profiles import Command as CreateUserProfilesCommand
 from .middleware import UserProfileMiddleware
 from .models import Booking, FitnessClass, UserProfile
 from .signals import create_user_profile, save_user_profile
@@ -307,9 +305,7 @@ class BookingViewsTest(TestCase):
         mock_send_mail.assert_called_once()
 
         # Should redirect to confirmation page
-        self.assertRedirects(
-            response, reverse("booking_confirmation", args=[booking.id])
-        )
+        self.assertRedirects(response, reverse("booking_confirmation", args=[booking.id]))
 
     def test_book_class_already_booked(self):
         self.client.login(username="testuser_views", password="testpassword")
