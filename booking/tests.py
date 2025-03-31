@@ -307,7 +307,9 @@ class BookingViewsTest(TestCase):
         mock_send_mail.assert_called_once()
 
         # Should redirect to confirmation page
-        self.assertRedirects(response, reverse("booking_confirmation", args=[booking.id]))
+        self.assertRedirects(
+            response, reverse("booking_confirmation", args=[booking.id])
+        )
 
     def test_book_class_already_booked(self):
         self.client.login(username="testuser_views", password="testpassword")
