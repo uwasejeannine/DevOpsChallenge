@@ -2,8 +2,10 @@
 Configure Django for pytest.
 This file must be placed in the root directory of your project.
 """
+
 import os
 import sys
+
 import django
 from django.conf import settings
 
