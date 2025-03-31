@@ -6,7 +6,9 @@ from django.test import Client, RequestFactory, TestCase
 from django.urls import NoReverseMatch, reverse
 
 from .forms import BookingForm, UserProfileForm, UserRegisterForm
-from .management.commands.create_user_profiles import Command as CreateUserProfilesCommand
+from .management.commands.create_user_profiles import (
+    Command as CreateUserProfilesCommand,
+)
 from .middleware import UserProfileMiddleware
 from .models import Booking, FitnessClass, UserProfile
 from .signals import create_user_profile, save_user_profile
