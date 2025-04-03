@@ -1,30 +1,29 @@
-# Create this file at your_app/management/commands/create_user_profiles.py
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-
-from booking.models import UserProfile  # Replace with your app name
+from django.contrib.auth.models import User
+from booking.models import UserProfile
 
 
 class Command(BaseCommand):
-    help = "Create UserProfile for users who do not have one"
+    help = 'Creates UserProfile objects for any User without one'
 
-    def handle(self, *args, **kwargs):
-        users_without_profile = []
-
+    def handle(self, *args, **options):
+        users_without_profiles = []
         for user in User.objects.all():
             try:
+                # Access the userprofile to see if it exists
                 user.userprofile
             except User.userprofile.RelatedObjectDoesNotExist:
-                users_without_profile.append(user)
-                UserProfile.objects.create(user=user)
-
-        if users_without_profile:
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Created {len(users_without_profile)} user profiles"
-                )
-            )
-            for user in users_without_profile:
-                self.stdout.write(f" - Created profile for {user.username}")
-        else:
-            self.stdout.write(self.style.SUCCESS("All users already have profiles"))
+                users_without_profiles.append(user)
+        
+        if not users_without_profiles:
+            self.stdout.write('All users already have profiles')
+            return True
+            
+        count = 0
+        for user in users_without_profiles:
+            UserProfile.objects.create(user=user)
+            self.stdout.write(f' - Created profile for {user.username}')
+            count += 1
+        
+        self.stdout.write(f'Created {count} user profiles')
+        return True
